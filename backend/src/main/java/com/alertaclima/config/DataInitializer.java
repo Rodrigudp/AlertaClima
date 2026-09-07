@@ -1,9 +1,8 @@
 package com.alertaclima.config;
 
 import com.alertaclima.model.Alert;
-import com.alertaclima.model.User;
+import com.alertaclima.model.UserInfo;
 import com.alertaclima.repository.AlertRepository;
-import com.alertaclima.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
@@ -16,28 +15,15 @@ import java.time.LocalDateTime;
 public class DataInitializer implements CommandLineRunner {
 
     @Autowired
-    private UserRepository userRepository;
-    
-    @Autowired
     private AlertRepository alertRepository;
 
     @Override
     public void run(String... args) throws Exception {
         System.out.println("Limpando banco de dados para o reset...");
         alertRepository.deleteAll();
-        userRepository.deleteAll();
-        
-        User citizen = new User();
-        citizen.setName("Cidadão Exemplo");
-        citizen.setEmail("cidadao@exemplo.com");
-        citizen.setRole("CITIZEN");
-        citizen = userRepository.save(citizen);
 
-        User analyst = new User();
-        analyst.setName("Analista Defesa Civil");
-        analyst.setEmail("analista@defesacivil.gov.br");
-        analyst.setRole("ANALYST");
-        analyst = userRepository.save(analyst);
+        UserInfo citizen = new UserInfo(null, "Cidadão Exemplo", "cidadao@exemplo.com", "CITIZEN");
+        UserInfo analyst = new UserInfo(null, "Analista Defesa Civil", "analista@defesacivil.gov.br", "ANALYST");
 
         String[][] events = {
             {"Árvore caída na pista principal", "Uma grande árvore caiu bloqueando a via nos dois sentidos.", "Árvore caída", "Alto", "CONFIRMADO", "-23.5505", "-46.6333", "Centro, São Paulo - SP"},
@@ -52,8 +38,10 @@ public class DataInitializer implements CommandLineRunner {
             {"Tempestade severa com raios", "Muitos raios e chuva torrencial causando picos de energia.", "Outro evento de risco", "Baixo", "RESOLVIDO", "-12.9714", "-38.5014", "Salvador - BA"}
         };
 
+        long code = 1;
         for (String[] ev : events) {
             Alert alert = new Alert();
+            alert.setCode(code++);
             alert.setTitle(ev[0]);
             alert.setDescription(ev[1]);
             alert.setEvent_type(ev[2]);
@@ -63,14 +51,16 @@ public class DataInitializer implements CommandLineRunner {
             alert.setLongitude(Double.parseDouble(ev[6]));
             alert.setAddress(ev[7]);
             alert.setEvent_date(LocalDateTime.now());
-            alert.setCreated_by(citizen.getId());
+            alert.setCreated_by(citizen);
             if(ev[4].equals("CONFIRMADO") || ev[4].equals("RESOLVIDO")) {
-                alert.setValidated_by(analyst.getId());
+                alert.setValidated_by(analyst);
             }
             alert.setImage_url("https://via.placeholder.com/150");
+            alert.setCreatedAt(LocalDateTime.now());
+            alert.setUpdatedAt(LocalDateTime.now());
             alertRepository.save(alert);
         }
-        
+
         System.out.println("Banco de dados populado com " + events.length + " alertas fictícios!");
     }
 }
