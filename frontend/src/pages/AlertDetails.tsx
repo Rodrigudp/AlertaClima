@@ -43,7 +43,7 @@ export default function AlertDetails() {
       await api.patch(`/alerts/${id}/status`, {
         status,
         validation_notes: notes,
-        validated_by: 2 // Id do analista de exemplo
+        validated_by: { name: 'Analista Defesa Civil', email: 'analista@defesacivil.gov.br', role: 'ANALYST' } // Analista de exemplo
       });
       
       await api.put(`/alerts/${id}`, {
@@ -180,7 +180,7 @@ export default function AlertDetails() {
                 onClick={archiveAlert}
                 className="text-red-600 font-medium hover:text-red-800 px-4 py-2 border border-red-200 rounded hover:bg-red-50"
               >
-                Arquivar (Soft Delete)
+                Arquivar
               </button>
               
               <button 

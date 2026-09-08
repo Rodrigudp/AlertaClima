@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
-import { MapPin } from 'lucide-react';
+import { MapPin, ImagePlus, X } from 'lucide-react';
 
 export default function NewAlert() {
   const navigate = useNavigate();
@@ -15,8 +15,10 @@ export default function NewAlert() {
     latitude: '',
     longitude: '',
     address: '',
-    created_by: 1 // Cidadão por padrão para o exemplo
+    image_url: '',
+    created_by: { name: 'Cidadão Exemplo', email: 'cidadao@exemplo.com', role: 'CITIZEN' } // Usuário padrão para o exemplo
   });
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const eventTypes = [
     'Tornado', 'Árvore caída', 'Alagamento', 
@@ -55,6 +57,24 @@ export default function NewAlert() {
   const handleChange = (e: any) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageChange = (e: any) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      setFormData(prev => ({ ...prev, image_url: result }));
+      setImagePreview(result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeImage = () => {
+    setFormData(prev => ({ ...prev, image_url: '' }));
+    setImagePreview(null);
   };
 
   const handleSubmit = async (e: any) => {
@@ -187,8 +207,41 @@ export default function NewAlert() {
           </div>
         </div>
 
-        <button 
-          type="submit" 
+        <div className="bg-gray-50 p-4 rounded border border-gray-200">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Imagem (opcional)</label>
+
+          {imagePreview ? (
+            <div className="relative w-full h-48">
+              <img src={imagePreview} alt="Prévia da imagem anexada" className="w-full h-48 object-cover rounded border border-gray-200" />
+              <button
+                type="button"
+                onClick={removeImage}
+                className="absolute top-2 right-2 bg-white/90 text-red-600 rounded-full p-1 shadow hover:bg-white"
+                title="Remover imagem"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          ) : (
+            <label
+              htmlFor="image-upload"
+              className="flex flex-col items-center justify-center gap-2 w-full h-32 border-2 border-dashed border-gray-300 rounded cursor-pointer text-gray-400 hover:border-blue-400 hover:text-blue-500"
+            >
+              <ImagePlus size={24} />
+              <span className="text-sm">Clique para anexar uma foto da ocorrência</span>
+            </label>
+          )}
+          <input
+            id="image-upload"
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="hidden"
+          />
+        </div>
+
+        <button
+          type="submit"
           disabled={loading}
           className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded hover:bg-blue-700 disabled:opacity-50"
         >

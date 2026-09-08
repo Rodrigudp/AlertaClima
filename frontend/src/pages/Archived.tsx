@@ -44,7 +44,7 @@ export default function Archived() {
                 <tr><td colSpan={5} className="text-center py-4">Nenhum alerta arquivado encontrado</td></tr>
               ) : alerts.map(alert => (
                 <tr key={alert.id} className="border-b hover:bg-gray-50">
-                  <td className="px-4 py-3">#{alert.id}</td>
+                  <td className="px-4 py-3">#{String(alert.code ?? '?').padStart(4, '0')}</td>
                   <td className="px-4 py-3 font-medium text-gray-900">{alert.title}</td>
                   <td className="px-4 py-3">{format(new Date(alert.event_date), 'dd/MM/yyyy HH:mm')}</td>
                   <td className="px-4 py-3">{alert.deletedAt ? format(new Date(alert.deletedAt), 'dd/MM/yyyy HH:mm') : '-'}</td>
