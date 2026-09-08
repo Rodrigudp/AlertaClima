@@ -7,9 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserInfo {
+public class InformacoesUsuario {
     private String id;
-    private String name;
+    private String nome;
     private String email;
-    private String role; // CITIZEN ou ANALYST
+    private String papel; // CITIZEN ou ANALYST
 }

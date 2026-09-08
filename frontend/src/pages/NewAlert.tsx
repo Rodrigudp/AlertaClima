@@ -8,15 +8,15 @@ export default function NewAlert() {
   const [loading, setLoading] = useState(false);
   const [locating, setLocating] = useState(false);
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    event_type: 'Árvore caída',
-    danger_level: 'Moderado',
+    titulo: '',
+    descricao: '',
+    tipo_evento: 'Árvore caída',
+    nivel_perigo: 'Moderado',
     latitude: '',
     longitude: '',
-    address: '',
-    image_url: '',
-    created_by: { name: 'Cidadão Exemplo', email: 'cidadao@exemplo.com', role: 'CITIZEN' } // Usuário padrão para o exemplo
+    endereco: '',
+    url_imagem: '',
+    criado_por: { nome: 'Cidadão Exemplo', email: 'cidadao@exemplo.com', papel: 'CITIZEN' } // Usuário padrão para o exemplo
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -66,14 +66,14 @@ export default function NewAlert() {
     const reader = new FileReader();
     reader.onload = () => {
       const result = reader.result as string;
-      setFormData(prev => ({ ...prev, image_url: result }));
+      setFormData(prev => ({ ...prev, url_imagem: result }));
       setImagePreview(result);
     };
     reader.readAsDataURL(file);
   };
 
   const removeImage = () => {
-    setFormData(prev => ({ ...prev, image_url: '' }));
+    setFormData(prev => ({ ...prev, url_imagem: '' }));
     setImagePreview(null);
   };
 
@@ -86,10 +86,10 @@ export default function NewAlert() {
         ...formData,
         latitude: parseFloat(formData.latitude),
         longitude: parseFloat(formData.longitude),
-        event_date: new Date()
+        data_evento: new Date()
       };
-      
-      await api.post('/alerts', payload);
+
+      await api.post('/alertas', payload);
       alert('Alerta registrado com sucesso.');
       navigate('/dashboard');
     } catch (error: any) {
@@ -109,8 +109,8 @@ export default function NewAlert() {
           <input 
             required 
             type="text" 
-            name="title"
-            value={formData.title}
+            name="titulo"
+            value={formData.titulo}
             onChange={handleChange}
             className="w-full p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" 
             placeholder="Ex: Árvore caída na pista"
@@ -120,8 +120,8 @@ export default function NewAlert() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Evento</label>
           <select 
-            name="event_type"
-            value={formData.event_type}
+            name="tipo_evento"
+            value={formData.tipo_evento}
             onChange={handleChange}
             className="w-full p-2 border border-gray-300 rounded"
           >
@@ -133,8 +133,8 @@ export default function NewAlert() {
           <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
           <textarea 
             required 
-            name="description"
-            value={formData.description}
+            name="descricao"
+            value={formData.descricao}
             onChange={handleChange}
             rows={3}
             className="w-full p-2 border border-gray-300 rounded" 
@@ -145,8 +145,8 @@ export default function NewAlert() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Nível de Perigo</label>
           <select 
-            name="danger_level"
-            value={formData.danger_level}
+            name="nivel_perigo"
+            value={formData.nivel_perigo}
             onChange={handleChange}
             className="w-full p-2 border border-gray-300 rounded"
           >
@@ -198,8 +198,8 @@ export default function NewAlert() {
             <label className="block text-xs text-gray-500">Endereço / Referência</label>
             <input 
               type="text" 
-              name="address"
-              value={formData.address}
+              name="endereco"
+              value={formData.endereco}
               onChange={handleChange}
               className="w-full p-2 border border-gray-300 rounded text-sm" 
               placeholder="Opcional"

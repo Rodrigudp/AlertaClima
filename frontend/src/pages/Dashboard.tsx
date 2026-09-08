@@ -19,10 +19,10 @@ export default function Dashboard() {
   const fetchAlerts = async () => {
     setLoading(true);
     try {
-      let url = '/alerts?';
-      if (filterType) url += `event_type=${encodeURIComponent(filterType)}&`;
+      let url = '/alertas?';
+      if (filterType) url += `tipo_evento=${encodeURIComponent(filterType)}&`;
       if (filterStatus) url += `status=${encodeURIComponent(filterStatus)}&`;
-      if (filterDanger) url += `danger_level=${encodeURIComponent(filterDanger)}&`;
+      if (filterDanger) url += `nivel_perigo=${encodeURIComponent(filterDanger)}&`;
 
       const res = await api.get(url);
       setAlerts(res.data);
@@ -36,7 +36,7 @@ export default function Dashboard() {
   const deleteAlert = async (id: string) => {
     if (!confirm('Deseja realmente arquivar este alerta?')) return;
     try {
-      await api.delete(`/alerts/${id}`);
+      await api.delete(`/alertas/${id}`);
       fetchAlerts();
     } catch (error) {
       alert('Erro ao arquivar alerta');
@@ -68,7 +68,7 @@ export default function Dashboard() {
     total: alerts.length,
     suspeitos: alerts.filter(a => a.status === 'SUSPEITO').length,
     confirmados: alerts.filter(a => a.status === 'CONFIRMADO').length,
-    criticos: alerts.filter(a => a.danger_level === 'Crítico').length,
+    criticos: alerts.filter(a => a.nivel_perigo === 'Crítico').length,
   };
 
   return (
@@ -158,12 +158,12 @@ export default function Dashboard() {
                 <tr><td colSpan={6} className="text-center py-4">Nenhum alerta encontrado</td></tr>
               ) : alerts.map(alert => (
                 <tr key={alert.id} className="border-b hover:bg-gray-50">
-                  <td className="px-4 py-3">#{String(alert.code ?? '?').padStart(4, '0')}</td>
-                  <td className="px-4 py-3 font-medium text-gray-900">{alert.title}</td>
-                  <td className="px-4 py-3">{format(new Date(alert.event_date), 'dd/MM/yyyy HH:mm')}</td>
+                  <td className="px-4 py-3">#{String(alert.codigo ?? '?').padStart(4, '0')}</td>
+                  <td className="px-4 py-3 font-medium text-gray-900">{alert.titulo}</td>
+                  <td className="px-4 py-3">{format(new Date(alert.data_evento), 'dd/MM/yyyy HH:mm')}</td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDangerColor(alert.danger_level)}`}>
-                      {alert.danger_level}
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDangerColor(alert.nivel_perigo)}`}>
+                      {alert.nivel_perigo}
                     </span>
                   </td>
                   <td className="px-4 py-3">

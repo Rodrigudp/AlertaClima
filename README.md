@@ -22,7 +22,7 @@ A implementação de uma plataforma web responsiva, composta por uma API RESTful
 * **Frontend:** React, Vite, TypeScript, Tailwind CSS, Leaflet, OpenStreetMap.
 * **Backend:** Java 17, Spring Boot, Spring Data MongoDB, Springdoc OpenAPI (Swagger UI).
 * **Testes:** JUnit 5, Mockito, MockMvc, JaCoCo.
-* **Banco de Dados:** MongoDB, numa única collection `alerts` (dados do usuário que criou/validou o alerta ficam embutidos no próprio documento).
+* **Banco de Dados:** MongoDB, numa única collection `alertas` (dados do usuário que criou/validou o alerta ficam embutidos no próprio documento).
 
 ## Pré-requisitos
 
@@ -53,7 +53,7 @@ O sistema segue a arquitetura Cliente-Servidor separando responsabilidades:
   * *Controllers:* Interceptam as requisições HTTP e devolvem ResponseEntity.
   * *Services:* Centralizam as regras de negócio.
   * *Repositories:* Encapsulam e intermediam o acesso aos dados via Spring Data MongoDB.
-  * *Models:* Documentos mapeados para a collection `alerts` no MongoDB.
+  * *Models:* Documentos mapeados para a collection `alertas` no MongoDB.
 * **Frontend (SPA):** Single Page Application onde as views comunicam com a API via JSON.
 
 ## Como iniciar o sistema
@@ -63,7 +63,7 @@ O sistema segue a arquitetura Cliente-Servidor separando responsabilidades:
 ```powershell
 docker run -d --name alertaclima-mongo -p 27017:27017 mongo:7
 ```
-A connection string fica configurada em `backend/src/main/resources/application.properties` (`spring.data.mongodb.uri`). O database e a collection `alerts` são criados automaticamente no primeiro registro.
+A connection string fica configurada em `backend/src/main/resources/application.properties` (`spring.data.mongodb.uri`). O database e a collection `alertas` são criados automaticamente no primeiro registro.
 
 ### 1. Iniciar o Backend (Java Spring Boot)
 
@@ -85,7 +85,7 @@ Abra no navegador: `http://localhost:5173`
 
 ## Testes automatizados e cobertura
 
-O backend possui testes unitários e de controller (`AlertService`, `AlertController`, `DataInitializer`, `CorsConfig`, `OpenApiConfiguration`, `StartupAccessLogger` e modelo `Alert`), com cobertura medida via **JaCoCo**.
+O backend possui testes unitários e de controller (`AlertaService`, `AlertaController`, `InicializadorDados`, `CorsConfig`, `OpenApiConfiguration`, `StartupAccessLogger` e modelo `Alerta`), com cobertura medida via **JaCoCo**.
 
 ### Como executar
 
@@ -130,7 +130,7 @@ Ao iniciar o backend, o terminal também exibe esses endereços automaticamente.
 
 ## CRUD na Prática
 O CRUD agora está implementado totalmente em Java! Você pode realizar:
-* **CREATE:** Cadastrar alerta (Salva na collection `alerts` do MongoDB).
+* **CREATE:** Cadastrar alerta (Salva na collection `alertas` do MongoDB).
 * **READ:** O Dashboard consome a API Rest em Java listando todos os itens.
 * **UPDATE:** O Analista consegue modificar status e níveis de perigo.
 * **DELETE:** O Analista consegue fazer o Soft Delete (arquivar ocorrência, populando o `deletedAt`).

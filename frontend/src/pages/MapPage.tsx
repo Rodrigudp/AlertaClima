@@ -27,7 +27,7 @@ export default function MapPage() {
   const fetchAlerts = async () => {
     setLoading(true);
     try {
-      let url = '/alerts?';
+      let url = '/alertas?';
       if (distanceFilter && userLat && userLon) {
         url += `lat=${userLat}&lon=${userLon}&distance=${distanceFilter}&`;
       }
@@ -106,11 +106,11 @@ export default function MapPage() {
             <Marker key={alert.id} position={[alert.latitude, alert.longitude]}>
               <Popup>
                 <div className="space-y-1">
-                  <h3 className="font-bold text-sm">{alert.title}</h3>
-                  <p className="text-xs text-gray-600">{alert.event_type}</p>
-                  <p className="text-xs font-medium text-red-600">Perigo: {alert.danger_level}</p>
+                  <h3 className="font-bold text-sm">{alert.titulo}</h3>
+                  <p className="text-xs text-gray-600">{alert.tipo_evento}</p>
+                  <p className="text-xs font-medium text-red-600">Perigo: {alert.nivel_perigo}</p>
                   <p className="text-xs font-medium text-blue-600">Status: {alert.status}</p>
-                  <p className="text-xs text-gray-500">{format(new Date(alert.event_date), 'dd/MM/yyyy HH:mm')}</p>
+                  <p className="text-xs text-gray-500">{format(new Date(alert.data_evento), 'dd/MM/yyyy HH:mm')}</p>
                 </div>
               </Popup>
             </Marker>
