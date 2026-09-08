@@ -19,9 +19,33 @@ Cidadãos que testemunham eventos de risco (árvore caída, alagamento, deslizam
 A implementação de uma plataforma web responsiva, composta por uma API RESTful em Java e um frontend reativo. Através do sistema, cidadãos enviam informações com latitude e longitude (via GPS do navegador), enquanto analistas possuem um painel para certificar as ocorrências.
 
 ## Tecnologias
-* **Frontend:** React, Vite, TypeScript, Tailwind CSS, Leaflet, OpenStreetMap. Pode ser usado HTML e CSS.
-* **Backend:** Java 17, Spring Boot, Spring Data MongoDB.
+* **Frontend:** React, Vite, TypeScript, Tailwind CSS, Leaflet, OpenStreetMap.
+* **Backend:** Java 17, Spring Boot, Spring Data MongoDB, Springdoc OpenAPI (Swagger UI).
+* **Testes:** JUnit 5, Mockito, MockMvc, JaCoCo.
 * **Banco de Dados:** MongoDB, numa única collection `alerts` (dados do usuário que criou/validou o alerta ficam embutidos no próprio documento).
+
+## Pré-requisitos
+
+| Ferramenta | Versão recomendada |
+|---|---|
+| **JDK** | **17 (LTS)** — versão testada e recomendada para o projeto |
+| Maven | 3.8+ (ou via IDE) |
+| Node.js | 18+ (apenas para o frontend) |
+| MongoDB | 7.x local ou Atlas |
+
+### JDK 17
+
+O projeto foi configurado para **Java 17** (`java.version` no `pom.xml`). Use essa versão no IntelliJ (**File → Project Structure → SDK**) para evitar incompatibilidades com dependências como o **Lombok** — em testes com JDK mais recente (ex.: 24 ou 26), a compilação pode falhar com erro `TypeTag :: UNKNOWN`.
+
+Confirme a versão ativa:
+```powershell
+java -version
+```
+
+Instalação no Windows (opcional):
+```powershell
+winget install Microsoft.OpenJDK.17
+```
 
 ## Arquitetura
 O sistema segue a arquitetura Cliente-Servidor separando responsabilidades:
@@ -42,11 +66,12 @@ docker run -d --name alertaclima-mongo -p 27017:27017 mongo:7
 A connection string fica configurada em `backend/src/main/resources/application.properties` (`spring.data.mongodb.uri`). O database e a collection `alerts` são criados automaticamente no primeiro registro.
 
 ### 1. Iniciar o Backend (Java Spring Boot)
-Abra a pasta `backend` na sua IDE de preferência (IntelliJ IDEA, Eclipse ou VS Code).
-Aguarde a IDE baixar as dependências do `pom.xml` (Maven).
-Execute a classe principal: `AlertaClimaApplication.java`.
-O servidor iniciará na porta **8080**.
-*Atenção:* A collection é limpa e populada automaticamente ao iniciar o projeto com o profile `seed`. Para persistir dados normais (evitar apagar a collection), basta comentar a anotação `@Profile("seed")` ou remover sua chamada, mas por padrão deixei ativo para facilitar a demonstração acadêmica imediata.
+
+Abra a pasta `backend` na IDE (IntelliJ IDEA recomendado), aguarde o Maven baixar as dependências e execute `AlertaClimaApplication.java`.
+
+O servidor sobe na porta **8080**. Na inicialização, o sistema recria automaticamente **10 alertas de exemplo** no MongoDB e o terminal exibe os acessos da API, da documentação Swagger e do JSON OpenAPI.
+
+> Para preservar dados entre reinicializações, remova `seed` de `spring.profiles.active` em `backend/src/main/resources/application.properties`.
 
 ### 2. Iniciar o Frontend (Interface)
 Abra o terminal, vá para a pasta `frontend` e digite:
@@ -59,12 +84,49 @@ O servidor frontend iniciará na porta **5173**.
 Abra no navegador: `http://localhost:5173`
 
 ## Testes automatizados e cobertura
-O backend possui testes unitários (JUnit 5 + Mockito, cobrindo `AlertService`, `AlertController`, `DataInitializer` e o modelo `Alert`) com cobertura medida via JaCoCo. Para rodar:
+
+O backend possui testes unitários e de controller (`AlertService`, `AlertController`, `DataInitializer`, `CorsConfig`, `OpenApiConfiguration`, `StartupAccessLogger` e modelo `Alert`), com cobertura medida via **JaCoCo**.
+
+### Como executar
+
 ```powershell
 cd backend
 mvn verify
 ```
-O comando roda todos os testes e falha (`BUILD FAILURE`) se a cobertura de linhas ficar abaixo de 70% — o relatório HTML fica em `backend/target/site/jacoco/index.html`.
+
+O comando roda todos os testes e **falha** (`BUILD FAILURE`) se a cobertura de linhas ficar abaixo de **70%**.
+
+Relatório HTML:
+```text
+backend/target/site/jacoco/index.html
+```
+
+### Resultados obtidos (última execução)
+
+| Métrica | Resultado | Mínimo exigido (AEP) |
+|---|---|---|
+| **Linhas** | **99%** (104 de 105) | 70% |
+| Instruções | 99% | — |
+| Branches | 83% | — |
+
+| Pacote | Cobertura de linhas |
+|---|---|
+| `com.alertaclima.controller` | 100% |
+| `com.alertaclima.config` | 100% |
+| `com.alertaclima.service` | 98% (1 linha não coberta) |
+
+> Para reproduzir: execute `mvn verify` na pasta `backend` e abra o `index.html` do JaCoCo.
+
+## Documentação da API (Swagger)
+
+Com o backend em execução, a documentação interativa da API está disponível em:
+
+- Interface Swagger UI: `http://localhost:8080/docs`
+- Contrato OpenAPI (JSON): `http://localhost:8080/v3/api-docs`
+
+Na interface é possível visualizar os endpoints, os schemas dos modelos e executar requisições de teste diretamente pelo navegador.
+
+Ao iniciar o backend, o terminal também exibe esses endereços automaticamente.
 
 ## CRUD na Prática
 O CRUD agora está implementado totalmente em Java! Você pode realizar:
