@@ -6,6 +6,7 @@ import com.alertaclima.repository.AlertRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -17,14 +18,15 @@ import java.time.LocalDateTime;
 public class DataInitializer implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
-    private static final String PLACEHOLDER_IMAGE_URL = "http://localhost:8080/images/placeholder-alert.png";
 
     @Autowired
     private AlertRepository alertRepository;
 
+    @Value("${app.base-url}")
+    private String baseUrl;
+
     @Override
     public void run(String... args) throws Exception {
-        System.out.println("Limpando banco de dados para o reset...");
         log.info("Limpando banco de dados para o reset...");
         alertRepository.deleteAll();
 
@@ -61,14 +63,12 @@ public class DataInitializer implements CommandLineRunner {
             if(ev[4].equals("CONFIRMADO") || ev[4].equals("RESOLVIDO")) {
                 alert.setValidated_by(analyst);
             }
-            alert.setImage_url(PLACEHOLDER_IMAGE_URL);
+            alert.setImage_url(baseUrl + "/images/placeholder-alert.png");
             alert.setCreatedAt(LocalDateTime.now());
             alert.setUpdatedAt(LocalDateTime.now());
             alertRepository.save(alert);
         }
 
-        String message = "Banco de dados populado com " + events.length + " alertas ficticios!";
-        System.out.println(message);
-        log.info(message);
+        log.info("Banco de dados populado com {} alertas ficticios!", events.length);
     }
 }
