@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
-import { api } from '../api';
+import { api, USUARIOS_DEMO } from '../api';
 import { format } from 'date-fns';
 
 export default function AlertDetails() {
@@ -16,12 +16,48 @@ export default function AlertDetails() {
   const [dangerLevel, setDangerLevel] = useState('');
   const [notes, setNotes] = useState('');
 
+  // Comentários (coleção "comentarios", relacionada ao alerta por alertaId)
+  const [comments, setComments] = useState<any[]>([]);
+  const [newComment, setNewComment] = useState('');
+
   const statuses = ['SUSPEITO', 'EM ANÁLISE', 'CONFIRMADO', 'RESOLVIDO', 'FALSO ALARME'];
   const dangerLevels = ['Baixo', 'Moderado', 'Alto', 'Crítico'];
 
   useEffect(() => {
     fetchAlert();
+    fetchComments();
   }, [id]);
+
+  const fetchComments = async () => {
+    try {
+      const res = await api.get(`/alertas/${id}/comentarios`);
+      setComments(res.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const addComment = async (e: any) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+    try {
+      await api.post(`/alertas/${id}/comentarios`, { texto: newComment, autor: USUARIOS_DEMO[role] });
+      setNewComment('');
+      fetchComments();
+    } catch (error) {
+      alert('Erro ao enviar comentário');
+    }
+  };
+
+  const removeComment = async (commentId: string) => {
+    if (!confirm('Remover este comentário?')) return;
+    try {
+      await api.delete(`/comentarios/${commentId}`);
+      fetchComments();
+    } catch (error) {
+      alert('Erro ao remover comentário');
+    }
+  };
 
   const fetchAlert = async () => {
     try {
@@ -43,7 +79,7 @@ export default function AlertDetails() {
       await api.patch(`/alertas/${id}/status`, {
         status,
         notas_validacao: notes,
-        validado_por: { nome: 'Analista Defesa Civil', email: 'analista@defesacivil.gov.br', papel: 'ANALYST' } // Analista de exemplo
+        validado_por: USUARIOS_DEMO.ANALYST
       });
 
       await api.put(`/alertas/${id}`, {
@@ -79,7 +115,10 @@ export default function AlertDetails() {
         <div className="flex justify-between items-start mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">{alertData.titulo}</h1>
-            <p className="text-gray-500 text-sm mt-1">Registrado em {format(new Date(alertData.criadoEm), 'dd/MM/yyyy HH:mm')}</p>
+            <p className="text-gray-500 text-sm mt-1">
+              Registrado em {format(new Date(alertData.criadoEm), 'dd/MM/yyyy HH:mm')}
+              {alertData.criado_por && <> por <span className="font-medium text-gray-700">{alertData.criado_por.nome}</span></>}
+            </p>
           </div>
           <div className="text-right">
             <span className="inline-block px-3 py-1 bg-gray-100 text-gray-800 font-bold rounded-full mb-1 block text-center">
@@ -130,6 +169,63 @@ export default function AlertDetails() {
               </div>
             )}
           </div>
+        </div>
+      </div>
+
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h2 className="text-lg font-bold text-gray-800 mb-4">Histórico de status</h2>
+          {(alertData.historico || []).length === 0 ? (
+            <p className="text-sm text-gray-500">Sem registros de histórico.</p>
+          ) : (
+            <ol className="relative border-l border-gray-200 ml-2 space-y-4">
+              {alertData.historico.map((h: any, i: number) => (
+                <li key={i} className="ml-4">
+                  <div className="absolute w-3 h-3 bg-blue-600 rounded-full -left-1.5 mt-1.5 border border-white"></div>
+                  <p className="text-sm font-semibold text-gray-800">{h.status}</p>
+                  <p className="text-xs text-gray-500">
+                    {format(new Date(h.data), 'dd/MM/yyyy HH:mm')}
+                    {h.responsavel && <> · {h.responsavel.nome}</>}
+                  </p>
+                  {h.observacao && <p className="text-sm text-gray-700 mt-1">{h.observacao}</p>}
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col">
+          <h2 className="text-lg font-bold text-gray-800 mb-4">Comentários ({comments.length})</h2>
+          <div className="space-y-3 flex-1">
+            {comments.length === 0 && <p className="text-sm text-gray-500">Nenhum comentário ainda.</p>}
+            {comments.map((c) => (
+              <div key={c.id} className="bg-gray-50 border border-gray-100 rounded p-3">
+                <div className="flex justify-between items-start gap-2">
+                  <p className="text-xs text-gray-500">
+                    <span className="font-semibold text-gray-700">{c.autor?.nome}</span>
+                    {c.autor?.papel === 'ANALYST' && <span className="ml-1 px-1.5 py-0.5 bg-slate-800 text-white rounded text-[10px]">Defesa Civil</span>}
+                    {' · '}{format(new Date(c.criadoEm), 'dd/MM HH:mm')}
+                  </p>
+                  {isAnalyst && (
+                    <button onClick={() => removeComment(c.id)} className="text-xs text-red-600 hover:underline">Remover</button>
+                  )}
+                </div>
+                <p className="text-sm text-gray-800 mt-1">{c.texto}</p>
+              </div>
+            ))}
+          </div>
+          <form onSubmit={addComment} className="mt-4 flex gap-2">
+            <input
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder={`Comentar como ${USUARIOS_DEMO[role]?.nome ?? 'usuário'}`}
+              className="flex-1 p-2 border border-gray-300 rounded text-sm"
+            />
+            <button type="submit" className="bg-blue-600 text-white text-sm font-semibold px-4 rounded hover:bg-blue-700">
+              Enviar
+            </button>
+          </form>
         </div>
       </div>
 

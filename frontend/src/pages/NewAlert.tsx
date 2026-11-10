@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../api';
+import { api, USUARIOS_DEMO } from '../api';
 import { MapPin, ImagePlus, X } from 'lucide-react';
 
 export default function NewAlert() {
@@ -16,7 +16,7 @@ export default function NewAlert() {
     longitude: '',
     endereco: '',
     url_imagem: '',
-    criado_por: { nome: 'Cidadão Exemplo', email: 'cidadao@exemplo.com', papel: 'CITIZEN' } // Usuário padrão para o exemplo
+    criado_por: USUARIOS_DEMO.CITIZEN // Usuário do seed; o backend grava a referência usuarioId
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 

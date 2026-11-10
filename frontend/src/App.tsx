@@ -5,6 +5,7 @@ import NewAlert from './pages/NewAlert';
 import MapPage from './pages/MapPage';
 import Archived from './pages/Archived';
 import AlertDetails from './pages/AlertDetails';
+import Users from './pages/Users';
 import 'leaflet/dist/leaflet.css';
 
 // Fix leaflet icons
@@ -31,6 +32,7 @@ function App() {
           <Route path="mapa" element={<MapPage />} />
           <Route path="arquivados" element={<Archived />} />
           <Route path="alerta/:id" element={<AlertDetails />} />
+          <Route path="usuarios" element={<Users />} />
         </Route>
       </Routes>
     </Router>

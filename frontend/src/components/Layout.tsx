@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, PlusCircle, Map as MapIcon, Archive } from 'lucide-react';
+import { Home, PlusCircle, Map as MapIcon, Archive, Users } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Layout() {
@@ -10,6 +10,7 @@ export default function Layout() {
     { path: '/dashboard', label: 'Dashboard', icon: Home },
     { path: '/novo-alerta', label: 'Novo Alerta', icon: PlusCircle },
     { path: '/mapa', label: 'Mapa de Alertas', icon: MapIcon },
+    { path: '/usuarios', label: 'Usuários', icon: Users },
   ];
 
   if (role === 'ANALYST') {
