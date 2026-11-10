@@ -34,9 +34,8 @@ public class UsuarioService {
             throw new RegraNegocioException("Já existe um usuário com este e-mail.");
         }
         if (usuario.getPapel() == null) {
-            usuario.setPapel(PapelUsuario.CITIZEN.name());
+            usuario.setPapel(PapelUsuario.CITIZEN);
         }
-        validarPapel(usuario.getPapel());
         if (usuario.getRegioesMonitoradas() == null) {
             usuario.setRegioesMonitoradas(new ArrayList<>());
         }
@@ -49,8 +48,8 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }
 
-    public List<Usuario> listar(String papel) {
-        if (papel == null || papel.isBlank()) {
+    public List<Usuario> listar(PapelUsuario papel) {
+        if (papel == null) {
             return usuarioRepository.findAllByOrderByNomeAsc();
         }
         return usuarioRepository.findByPapelOrderByNomeAsc(papel);
@@ -70,7 +69,6 @@ public class UsuarioService {
             usuario.setTelefone(dados.getTelefone());
         }
         if (dados.getPapel() != null) {
-            validarPapel(dados.getPapel());
             usuario.setPapel(dados.getPapel());
         }
         if (dados.getEmail() != null && !dados.getEmail().equals(usuario.getEmail())) {
@@ -129,12 +127,6 @@ public class UsuarioService {
             usuario = usuarioRepository.findByEmail(informacoes.getEmail());
         }
         return usuario.map(Usuario::resumo).orElse(informacoes);
-    }
-
-    private void validarPapel(String papel) {
-        if (!PapelUsuario.ehValido(papel)) {
-            throw new RegraNegocioException("Papel inválido. Use CITIZEN ou ANALYST.");
-        }
     }
 
     private void validarRegiao(RegiaoMonitorada regiao) {

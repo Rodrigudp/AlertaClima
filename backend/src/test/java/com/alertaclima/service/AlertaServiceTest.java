@@ -1,10 +1,13 @@
 package com.alertaclima.service;
 
+import com.alertaclima.model.StatusAlerta;
+import com.alertaclima.model.PapelUsuario;
 import com.alertaclima.model.Alerta;
 import com.alertaclima.model.InformacoesUsuario;
 import com.alertaclima.model.RegiaoMonitorada;
 import com.alertaclima.model.Usuario;
 import com.alertaclima.exception.RecursoNaoEncontradoException;
+import com.alertaclima.exception.RegraNegocioException;
 import com.alertaclima.repository.AlertaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,18 +45,18 @@ class AlertaServiceTest {
         alagamentoSP = new Alerta();
         alagamentoSP.setId("1");
         alagamentoSP.setTitulo("Alagamento severo");
-        alagamentoSP.setTipo_evento("Alagamento");
-        alagamentoSP.setStatus("SUSPEITO");
-        alagamentoSP.setNivel_perigo("Alto");
+        alagamentoSP.setTipoEvento("Alagamento");
+        alagamentoSP.setStatus(StatusAlerta.SUSPEITO);
+        alagamentoSP.setNivelPerigo("Alto");
         alagamentoSP.setLatitude(-23.5505);
         alagamentoSP.setLongitude(-46.6333);
 
         vendavalRJ = new Alerta();
         vendavalRJ.setId("2");
         vendavalRJ.setTitulo("Vendaval forte");
-        vendavalRJ.setTipo_evento("Vendaval");
-        vendavalRJ.setStatus("CONFIRMADO");
-        vendavalRJ.setNivel_perigo("Moderado");
+        vendavalRJ.setTipoEvento("Vendaval");
+        vendavalRJ.setStatus(StatusAlerta.CONFIRMADO);
+        vendavalRJ.setNivelPerigo("Moderado");
         vendavalRJ.setLatitude(-22.9068);
         vendavalRJ.setLongitude(-43.1729);
     }
@@ -67,7 +70,7 @@ class AlertaServiceTest {
 
         Alerta criado = alertaService.criarAlerta(entrada);
 
-        assertThat(criado.getStatus()).isEqualTo("SUSPEITO");
+        assertThat(criado.getStatus()).isEqualTo(StatusAlerta.SUSPEITO);
         assertThat(criado.getCriadoEm()).isNotNull();
         assertThat(criado.getAtualizadoEm()).isNotNull();
         verify(alertaRepository).save(entrada);
@@ -78,11 +81,11 @@ class AlertaServiceTest {
         when(alertaRepository.save(any(Alerta.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Alerta entrada = new Alerta();
-        entrada.setStatus("CONFIRMADO");
+        entrada.setStatus(StatusAlerta.CONFIRMADO);
 
         Alerta criado = alertaService.criarAlerta(entrada);
 
-        assertThat(criado.getStatus()).isEqualTo("CONFIRMADO");
+        assertThat(criado.getStatus()).isEqualTo(StatusAlerta.CONFIRMADO);
     }
 
     @Test
@@ -100,7 +103,7 @@ class AlertaServiceTest {
         when(alertaRepository.findByArquivadoEmIsNullOrderByCriadoEmDesc())
                 .thenReturn(Arrays.asList(alagamentoSP, vendavalRJ));
 
-        List<Alerta> porStatus = alertaService.buscarAlertasAtivos(null, "CONFIRMADO", null, null, null, null);
+        List<Alerta> porStatus = alertaService.buscarAlertasAtivos(null, StatusAlerta.CONFIRMADO, null, null, null, null);
         assertThat(porStatus).containsExactly(vendavalRJ);
 
         List<Alerta> porPerigo = alertaService.buscarAlertasAtivos(null, null, "Alto", null, null, null);
@@ -140,31 +143,25 @@ class AlertaServiceTest {
     }
 
     @Test
-    void buscarAlertaPorIdRetornaNuloQuandoNaoEncontrado() {
-        when(alertaRepository.findById("999")).thenReturn(Optional.empty());
-
-        assertThat(alertaService.buscarAlertaPorId("999")).isNull();
-    }
-
-    @Test
     void atualizarAlertaAlteraApenasNivelPerigo() {
         when(alertaRepository.findById("1")).thenReturn(Optional.of(alagamentoSP));
         when(alertaRepository.save(any(Alerta.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Alerta patch = new Alerta();
-        patch.setNivel_perigo("Crítico");
+        patch.setNivelPerigo("Crítico");
 
         Alerta atualizado = alertaService.atualizarAlerta("1", patch);
 
-        assertThat(atualizado.getNivel_perigo()).isEqualTo("Crítico");
+        assertThat(atualizado.getNivelPerigo()).isEqualTo("Crítico");
         assertThat(atualizado.getTitulo()).isEqualTo("Alagamento severo");
     }
 
     @Test
-    void atualizarAlertaRetornaNuloQuandoAlertaNaoExiste() {
+    void atualizarAlertaLancaExcecaoQuandoAlertaNaoExiste() {
         when(alertaRepository.findById("404")).thenReturn(Optional.empty());
 
-        assertThat(alertaService.atualizarAlerta("404", new Alerta())).isNull();
+        assertThatThrownBy(() -> alertaService.atualizarAlerta("404", new Alerta()))
+                .isInstanceOf(RecursoNaoEncontradoException.class);
         verify(alertaRepository, never()).save(any());
     }
 
@@ -173,51 +170,51 @@ class AlertaServiceTest {
         when(alertaRepository.findById("1")).thenReturn(Optional.of(alagamentoSP));
         when(alertaRepository.save(any(Alerta.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        InformacoesUsuario analista = new InformacoesUsuario(null, "Analista", "analista@defesacivil.gov.br", "ANALYST");
+        InformacoesUsuario analista = new InformacoesUsuario(null, "Analista", "analista@defesacivil.gov.br", PapelUsuario.ANALYST);
         when(usuarioService.vincular(analista)).thenReturn(analista);
-        Alerta atualizado = alertaService.atualizarStatus("1", "CONFIRMADO", analista, "Confirmado in loco");
+        Alerta atualizado = alertaService.atualizarStatus("1", StatusAlerta.CONFIRMADO, analista, "Confirmado in loco");
 
-        assertThat(atualizado.getStatus()).isEqualTo("CONFIRMADO");
-        assertThat(atualizado.getValidado_por()).isEqualTo(analista);
-        assertThat(atualizado.getNotas_validacao()).isEqualTo("Confirmado in loco");
+        assertThat(atualizado.getStatus()).isEqualTo(StatusAlerta.CONFIRMADO);
+        assertThat(atualizado.getValidadoPor()).isEqualTo(analista);
+        assertThat(atualizado.getNotasValidacao()).isEqualTo("Confirmado in loco");
     }
 
     @Test
-    void arquivarAlertaDefineArquivadoEmERetornaTrue() {
+    void arquivarAlertaDefineArquivadoEm() {
         when(alertaRepository.findById("1")).thenReturn(Optional.of(alagamentoSP));
 
-        boolean resultado = alertaService.arquivarAlerta("1");
+        alertaService.arquivarAlerta("1");
 
-        assertThat(resultado).isTrue();
         assertThat(alagamentoSP.getArquivadoEm()).isNotNull();
         verify(alertaRepository).save(alagamentoSP);
     }
 
     @Test
-    void arquivarAlertaRetornaFalseQuandoAlertaNaoExiste() {
+    void arquivarAlertaLancaExcecaoQuandoAlertaNaoExiste() {
         when(alertaRepository.findById("404")).thenReturn(Optional.empty());
 
-        assertThat(alertaService.arquivarAlerta("404")).isFalse();
+        assertThatThrownBy(() -> alertaService.arquivarAlerta("404"))
+                .isInstanceOf(RecursoNaoEncontradoException.class);
         verify(alertaRepository, never()).save(any());
     }
 
     @Test
     void criarAlertaVinculaCriadorAoUsuarioERegistraHistoricoInicial() {
-        InformacoesUsuario enviado = new InformacoesUsuario(null, "Cidadão", "cidadao@exemplo.com", "CITIZEN");
-        InformacoesUsuario vinculado = new InformacoesUsuario("u1", "Cidadão", "cidadao@exemplo.com", "CITIZEN");
+        InformacoesUsuario enviado = new InformacoesUsuario(null, "Cidadão", "cidadao@exemplo.com", PapelUsuario.CITIZEN);
+        InformacoesUsuario vinculado = new InformacoesUsuario("u1", "Cidadão", "cidadao@exemplo.com", PapelUsuario.CITIZEN);
         when(usuarioService.vincular(enviado)).thenReturn(vinculado);
         when(alertaRepository.count()).thenReturn(4L);
         when(alertaRepository.save(any(Alerta.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Alerta entrada = new Alerta();
-        entrada.setCriado_por(enviado);
+        entrada.setCriadoPor(enviado);
 
         Alerta criado = alertaService.criarAlerta(entrada);
 
         assertThat(criado.getCodigo()).isEqualTo(5L);
-        assertThat(criado.getCriado_por().getUsuarioId()).isEqualTo("u1");
+        assertThat(criado.getCriadoPor().getUsuarioId()).isEqualTo("u1");
         assertThat(criado.getHistorico()).hasSize(1);
-        assertThat(criado.getHistorico().get(0).getStatus()).isEqualTo("SUSPEITO");
+        assertThat(criado.getHistorico().get(0).getStatus()).isEqualTo(StatusAlerta.SUSPEITO);
         assertThat(criado.getHistorico().get(0).getResponsavel()).isEqualTo(vinculado);
     }
 
@@ -226,18 +223,51 @@ class AlertaServiceTest {
         when(alertaRepository.findById("1")).thenReturn(Optional.of(alagamentoSP));
         when(alertaRepository.save(any(Alerta.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        alertaService.atualizarStatus("1", "EM ANÁLISE", null, "Equipe a caminho");
-        Alerta atualizado = alertaService.atualizarStatus("1", "CONFIRMADO", null, "Confirmado");
+        alertaService.atualizarStatus("1", StatusAlerta.EM_ANALISE, null, "Equipe a caminho");
+        Alerta atualizado = alertaService.atualizarStatus("1", StatusAlerta.CONFIRMADO, null, "Confirmado");
 
-        assertThat(atualizado.getHistorico()).extracting("status").containsExactly("EM ANÁLISE", "CONFIRMADO");
+        assertThat(atualizado.getHistorico()).extracting("status").containsExactly(StatusAlerta.EM_ANALISE, StatusAlerta.CONFIRMADO);
     }
 
     @Test
-    void atualizarStatusRetornaNuloQuandoAlertaNaoExiste() {
+    void atualizarStatusLancaExcecaoQuandoAlertaNaoExiste() {
         when(alertaRepository.findById("404")).thenReturn(Optional.empty());
 
-        assertThat(alertaService.atualizarStatus("404", "CONFIRMADO", null, null)).isNull();
+        assertThatThrownBy(() -> alertaService.atualizarStatus("404", StatusAlerta.CONFIRMADO, null, null))
+                .isInstanceOf(RecursoNaoEncontradoException.class);
         verify(alertaRepository, never()).save(any());
+    }
+
+    @Test
+    void atualizarStatusExigeStatus() {
+        assertThatThrownBy(() -> alertaService.atualizarStatus("1", null, null, "sem status"))
+                .isInstanceOf(RegraNegocioException.class)
+                .hasMessage("O status é obrigatório.");
+        verify(alertaRepository, never()).save(any());
+    }
+
+    @Test
+    void buscarAlertaPorIdLancaExcecaoQuandoNaoExiste() {
+        when(alertaRepository.findById("404")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> alertaService.buscarAlertaPorId("404"))
+                .isInstanceOf(RecursoNaoEncontradoException.class)
+                .hasMessage("Alerta não encontrado");
+    }
+
+    @Test
+    void criarAlertaIgnoraIdEArquivamentoEnviadosPeloCliente() {
+        Alerta entrada = new Alerta();
+        entrada.setId("id-forjado");
+        entrada.setArquivadoEm(java.time.LocalDateTime.now());
+        when(alertaRepository.count()).thenReturn(0L);
+        when(alertaRepository.save(any(Alerta.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Alerta criado = alertaService.criarAlerta(entrada);
+
+        assertThat(criado.getId()).isNull();
+        assertThat(criado.getArquivadoEm()).isNull();
+        assertThat(criado.getStatus()).isEqualTo(StatusAlerta.SUSPEITO);
     }
 
     @Test
@@ -266,5 +296,34 @@ class AlertaServiceTest {
                 .thenReturn(Arrays.asList(alagamentoSP, vendavalRJ));
 
         assertThat(alertaService.buscarAlertasNasRegioesDoUsuario("u1")).containsExactly(alagamentoSP);
+    }
+
+    @Test
+    void buscarAlertasAtivosTrataFiltroVazioComoAusente() {
+        when(alertaRepository.findByArquivadoEmIsNullOrderByCriadoEmDesc())
+                .thenReturn(Arrays.asList(alagamentoSP, vendavalRJ));
+
+        assertThat(alertaService.buscarAlertasAtivos("", null, "", null, null, null))
+                .containsExactly(alagamentoSP, vendavalRJ);
+    }
+
+    @Test
+    void filtroPorRaioSoSeAplicaComCoordenadaERaioCompletos() {
+        Alerta semLocalizacao = new Alerta();
+        semLocalizacao.setId("3");
+        Alerta soLatitude = new Alerta();
+        soLatitude.setId("4");
+        soLatitude.setLatitude(-10.0);
+        when(alertaRepository.findByArquivadoEmIsNullOrderByCriadoEmDesc())
+                .thenReturn(Arrays.asList(alagamentoSP, vendavalRJ, semLocalizacao, soLatitude));
+
+        // Referência incompleta (sem longitude ou sem raio): o filtro de raio é ignorado.
+        assertThat(alertaService.buscarAlertasAtivos(null, null, null, -23.55, null, 50.0)).hasSize(4);
+        assertThat(alertaService.buscarAlertasAtivos(null, null, null, null, -46.63, 50.0)).hasSize(4);
+        assertThat(alertaService.buscarAlertasAtivos(null, null, null, -23.55, -46.63, null)).hasSize(4);
+
+        // Alertas sem coordenadas completas não são descartados pelo raio.
+        assertThat(alertaService.buscarAlertasAtivos(null, null, null, -23.55, -46.63, 50.0))
+                .containsExactly(alagamentoSP, semLocalizacao, soLatitude);
     }
 }

@@ -1,7 +1,10 @@
 package com.alertaclima.service;
 
+import com.alertaclima.exception.RecursoNaoEncontradoException;
+import com.alertaclima.exception.RegraNegocioException;
 import com.alertaclima.model.Alerta;
 import com.alertaclima.model.InformacoesUsuario;
+import com.alertaclima.model.StatusAlerta;
 import com.alertaclima.model.Usuario;
 import com.alertaclima.repository.AlertaRepository;
 import com.alertaclima.util.CalculadoraDistancia;
@@ -13,7 +16,7 @@ import java.util.List;
 @Service
 public class AlertaService {
 
-    private static final String STATUS_INICIAL = "SUSPEITO";
+    private static final StatusAlerta STATUS_INICIAL = StatusAlerta.SUSPEITO;
 
     private final AlertaRepository alertaRepository;
     private final UsuarioService usuarioService;
@@ -25,20 +28,23 @@ public class AlertaService {
 
     public Alerta criarAlerta(Alerta alerta) {
         if (alerta.getStatus() == null) alerta.setStatus(STATUS_INICIAL);
+        alerta.setId(null);
+        alerta.setArquivadoEm(null);
         alerta.setCodigo(alertaRepository.count() + 1);
-        alerta.setCriado_por(usuarioService.vincular(alerta.getCriado_por()));
-        alerta.registrarHistorico(alerta.getStatus(), alerta.getCriado_por(), "Alerta registrado");
+        alerta.setCriadoPor(usuarioService.vincular(alerta.getCriadoPor()));
+        alerta.registrarHistorico(alerta.getStatus(), alerta.getCriadoPor(), "Alerta registrado");
         LocalDateTime agora = LocalDateTime.now();
         alerta.setCriadoEm(agora);
         alerta.setAtualizadoEm(agora);
         return alertaRepository.save(alerta);
     }
 
-    public List<Alerta> buscarAlertasAtivos(String tipoEvento, String status, String nivelPerigo, Double lat, Double lon, Double distancia) {
+    public List<Alerta> buscarAlertasAtivos(String tipoEvento, StatusAlerta status, String nivelPerigo,
+                                            Double lat, Double lon, Double distancia) {
         return alertaRepository.findByArquivadoEmIsNullOrderByCriadoEmDesc().stream()
-                .filter(a -> correspondeAoFiltro(tipoEvento, a.getTipo_evento()))
-                .filter(a -> correspondeAoFiltro(status, a.getStatus()))
-                .filter(a -> correspondeAoFiltro(nivelPerigo, a.getNivel_perigo()))
+                .filter(a -> correspondeAoFiltro(tipoEvento, a.getTipoEvento()))
+                .filter(a -> status == null || status == a.getStatus())
+                .filter(a -> correspondeAoFiltro(nivelPerigo, a.getNivelPerigo()))
                 .filter(a -> estaDentroDoRaio(a, lat, lon, distancia))
                 .toList();
     }
@@ -48,7 +54,8 @@ public class AlertaService {
     }
 
     public Alerta buscarAlertaPorId(String id) {
-        return alertaRepository.findById(id).orElse(null);
+        return alertaRepository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Alerta não encontrado"));
     }
 
     /** Alertas ativos registrados por um usuário (relacionamento usuarios -> alertas). */
@@ -67,30 +74,29 @@ public class AlertaService {
 
     public Alerta atualizarAlerta(String id, Alerta dadosAtualizacao) {
         Alerta alerta = buscarAlertaPorId(id);
-        if (alerta == null) return null;
-        if (dadosAtualizacao.getNivel_perigo() != null) alerta.setNivel_perigo(dadosAtualizacao.getNivel_perigo());
+        if (dadosAtualizacao.getNivelPerigo() != null) alerta.setNivelPerigo(dadosAtualizacao.getNivelPerigo());
         alerta.setAtualizadoEm(LocalDateTime.now());
         return alertaRepository.save(alerta);
     }
 
-    public Alerta atualizarStatus(String id, String status, InformacoesUsuario validadoPor, String notas) {
+    public Alerta atualizarStatus(String id, StatusAlerta status, InformacoesUsuario validadoPor, String notas) {
+        if (status == null) {
+            throw new RegraNegocioException("O status é obrigatório.");
+        }
         Alerta alerta = buscarAlertaPorId(id);
-        if (alerta == null) return null;
         InformacoesUsuario validador = usuarioService.vincular(validadoPor);
         alerta.setStatus(status);
-        alerta.setValidado_por(validador);
-        alerta.setNotas_validacao(notas);
+        alerta.setValidadoPor(validador);
+        alerta.setNotasValidacao(notas);
         alerta.registrarHistorico(status, validador, notas);
         alerta.setAtualizadoEm(LocalDateTime.now());
         return alertaRepository.save(alerta);
     }
 
-    public boolean arquivarAlerta(String id) {
+    public void arquivarAlerta(String id) {
         Alerta alerta = buscarAlertaPorId(id);
-        if (alerta == null) return false;
         alerta.setArquivadoEm(LocalDateTime.now());
         alertaRepository.save(alerta);
-        return true;
     }
 
     private boolean correspondeAoFiltro(String filtro, String valor) {

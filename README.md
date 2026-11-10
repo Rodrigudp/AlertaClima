@@ -13,7 +13,7 @@ Eventos climáticos extremos e ocorrências de risco, como enchentes, quedas de 
 ## Tecnologias
 * **Frontend:** React, Vite, TypeScript, Tailwind CSS, Leaflet, OpenStreetMap.
 * **Backend:** Java 17, Spring Boot, Spring Data MongoDB, Springdoc OpenAPI (Swagger UI).
-* **Testes:** JUnit 5, Mockito, MockMvc, JaCoCo.
+* **Testes:** JUnit 5, Mockito, MockMvc, MongoDB embarcado (Flapdoodle), JaCoCo.
 * **Banco de Dados:** MongoDB, com as coleções `usuarios`, `alertas` e `comentarios`.
 * **CI:** GitHub Actions (testes, cobertura e build do frontend a cada push).
 
@@ -29,7 +29,7 @@ Eventos climáticos extremos e ocorrências de risco, como enchentes, quedas de 
 | Coleção | Conteúdo | Relacionamento / aninhamento |
 |---|---|---|
 | `usuarios` | Cidadãos e analistas | Lista de subdocumentos `regioesMonitoradas` |
-| `alertas` | Ocorrências reportadas | `criado_por.usuarioId` → `usuarios`; lista de subdocumentos `historico` |
+| `alertas` | Ocorrências reportadas | `criadoPor.usuarioId` → `usuarios`; lista de subdocumentos `historico` |
 | `comentarios` | Comentários sobre alertas | `alertaId` → `alertas`; `autor.usuarioId` → `usuarios` |
 
 Exemplos de documentos e decisões de modelagem: [docs/BANCO-DE-DADOS.md](docs/BANCO-DE-DADOS.md). Camadas, classes e endpoints: [docs/ARQUITETURA.md](docs/ARQUITETURA.md).
@@ -44,7 +44,7 @@ Exemplos de documentos e decisões de modelagem: [docs/BANCO-DE-DADOS.md](docs/B
 | Node.js | 18+ |
 | MongoDB | 7.x local ou Atlas |
 
-> Use JDK 17 no IntelliJ (**File → Project Structure → SDK**). Versões mais novas (24+) quebram a compilação do Lombok com erro `TypeTag :: UNKNOWN`.
+> O código é Java 17. O build foi verificado com JDK 17 (CI) e JDK 24 (local).
 
 ### 1. MongoDB
 ```powershell
@@ -53,7 +53,9 @@ docker run -d --name alertaclima-mongo -p 27017:27017 mongo:7
 A conexão fica em `backend/src/main/resources/application.properties` (`spring.data.mongodb.uri`). O database e as coleções são criados automaticamente.
 
 ### 2. Backend
-Abra a pasta `backend` na IDE, aguarde o Maven baixar as dependências e execute `AlertaClimaApplication.java`. Sobe na porta **8080**. Com o profile `seed` ativo, recria os dados de exemplo: 3 usuários com regiões monitoradas, 10 alertas com histórico e 4 comentários (remova `seed` de `spring.profiles.active` para preservar os dados entre reinicializações).
+Abra a pasta `backend` na IDE, aguarde o Maven baixar as dependências e execute `AlertaClimaApplication.java`. Sobe na porta **8080**.
+
+Para carregar os dados de exemplo (3 usuários com regiões monitoradas, 10 alertas com histórico e 4 comentários), ative o profile `seed`: no IntelliJ, em **Run → Edit Configurations → Active profiles**, ou pela linha de comando com `mvn spring-boot:run -Dspring-boot.run.profiles=seed`. **Atenção:** o `seed` apaga e recria as três coleções a cada inicialização. Sem ele, os dados são preservados.
 
 Com o backend rodando, a documentação interativa da API fica em `http://localhost:8080/docs` (Swagger UI).
 
@@ -70,9 +72,9 @@ Acesse `http://localhost:5173`.
 cd backend
 mvn verify
 ```
-Roda os 80 testes automatizados (JUnit 5 + Mockito + MockMvc) e mede a cobertura com JaCoCo. O build falha (`BUILD FAILURE`) se a cobertura de linhas ficar abaixo de 70%. Relatório em `backend/target/site/jacoco/index.html`.
+Roda os 104 testes automatizados (JUnit 5 + Mockito + MockMvc, e testes de repositório com `@DataMongoTest` contra um MongoDB embarcado, baixado automaticamente na primeira execução, sem precisar de Docker) e mede a cobertura com JaCoCo. O build falha (`BUILD FAILURE`) se a cobertura de linhas ficar abaixo de 70%. Relatório em `backend/target/site/jacoco/index.html`.
 
-Resultado na 2ª entrega: **100% de linhas** e **92,5% de branches**.
+Resultado na 2ª entrega: **100% de linhas** e **96% de branches**.
 
 O mesmo comando roda no GitHub Actions a cada push (aba **Actions**). Cada execução mostra a cobertura no resumo e disponibiliza o relatório HTML para download no artefato `relatorio-jacoco`.
 

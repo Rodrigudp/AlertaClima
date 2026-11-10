@@ -5,6 +5,7 @@ import com.alertaclima.exception.RegraNegocioException;
 import com.alertaclima.model.Alerta;
 import com.alertaclima.model.Comentario;
 import com.alertaclima.model.RegiaoMonitorada;
+import com.alertaclima.model.PapelUsuario;
 import com.alertaclima.model.Usuario;
 import com.alertaclima.service.AlertaService;
 import com.alertaclima.service.ComentarioService;
@@ -50,7 +51,7 @@ class UsuarioControllerTest {
         usuario.setId("u1");
         usuario.setNome("Maria");
         usuario.setEmail("maria@exemplo.com");
-        usuario.setPapel("CITIZEN");
+        usuario.setPapel(PapelUsuario.CITIZEN);
         usuario.getRegioesMonitoradas().add(new RegiaoMonitorada("Casa", -23.55, -46.63, 10.0));
     }
 
@@ -77,7 +78,7 @@ class UsuarioControllerTest {
 
     @Test
     void listarRepassaFiltroDePapel() throws Exception {
-        when(usuarioService.listar("CITIZEN")).thenReturn(List.of(usuario));
+        when(usuarioService.listar(PapelUsuario.CITIZEN)).thenReturn(List.of(usuario));
 
         mockMvc.perform(get("/api/usuarios").param("papel", "CITIZEN"))
                 .andExpect(status().isOk())
@@ -142,5 +143,23 @@ class UsuarioControllerTest {
                 .andExpect(status().isOk()).andExpect(jsonPath("$[0].id").value("a1"));
         mockMvc.perform(get("/api/usuarios/u1/comentarios"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$[0].id").value("c1"));
+    }
+
+    @Test
+    void listarComPapelInvalidoRetorna400() throws Exception {
+        mockMvc.perform(get("/api/usuarios").param("papel", "ADMIN"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Valor inválido para o parâmetro 'papel'."));
+        verifyNoInteractions(usuarioService);
+    }
+
+    @Test
+    void criarComPapelInvalidoNoCorpoRetorna400() throws Exception {
+        mockMvc.perform(post("/api/usuarios")
+                        .contentType("application/json")
+                        .content("{\"nome\":\"X\",\"email\":\"x@x.com\",\"papel\":\"ADMIN\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").exists());
+        verifyNoInteractions(usuarioService);
     }
 }

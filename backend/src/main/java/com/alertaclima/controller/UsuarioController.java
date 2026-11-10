@@ -2,6 +2,7 @@ package com.alertaclima.controller;
 
 import com.alertaclima.model.Alerta;
 import com.alertaclima.model.Comentario;
+import com.alertaclima.model.PapelUsuario;
 import com.alertaclima.model.RegiaoMonitorada;
 import com.alertaclima.model.Usuario;
 import com.alertaclima.service.AlertaService;
@@ -41,7 +42,7 @@ public class UsuarioController {
     @GetMapping
     @Operation(summary = "Listar usuários", description = "Filtro opcional por papel (CITIZEN ou ANALYST).")
     public ResponseEntity<List<Usuario>> listar(
-            @Parameter(description = "Papel do usuário") @RequestParam(required = false) String papel) {
+            @Parameter(description = "Papel do usuário") @RequestParam(required = false) PapelUsuario papel) {
         return ResponseEntity.ok(usuarioService.listar(papel));
     }
 

@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RegistroHistorico {
-    private String status;
+    private StatusAlerta status;
     private LocalDateTime data;
     private InformacoesUsuario responsavel;
     private String observacao;

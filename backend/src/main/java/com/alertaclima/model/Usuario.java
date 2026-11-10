@@ -22,7 +22,7 @@ public class Usuario {
     private String email;
 
     private String telefone;
-    private String papel;
+    private PapelUsuario papel;
 
     /** Lista de subdocumentos: regiões que o usuário acompanha. */
     private List<RegiaoMonitorada> regioesMonitoradas = new ArrayList<>();

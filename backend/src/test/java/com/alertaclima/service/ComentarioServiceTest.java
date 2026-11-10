@@ -1,5 +1,6 @@
 package com.alertaclima.service;
 
+import com.alertaclima.model.PapelUsuario;
 import com.alertaclima.exception.RecursoNaoEncontradoException;
 import com.alertaclima.exception.RegraNegocioException;
 import com.alertaclima.model.Alerta;
@@ -36,7 +37,7 @@ class ComentarioServiceTest {
     @InjectMocks
     private ComentarioService comentarioService;
 
-    private final InformacoesUsuario autor = new InformacoesUsuario("u1", "Maria", "maria@exemplo.com", "CITIZEN");
+    private final InformacoesUsuario autor = new InformacoesUsuario("u1", "Maria", "maria@exemplo.com", PapelUsuario.CITIZEN);
 
     private Comentario comentario(String texto, InformacoesUsuario autor) {
         Comentario c = new Comentario();
@@ -61,7 +62,7 @@ class ComentarioServiceTest {
 
     @Test
     void adicionarFalhaQuandoAlertaNaoExiste() {
-        when(alertaService.buscarAlertaPorId("x")).thenReturn(null);
+        when(alertaService.buscarAlertaPorId("x")).thenThrow(new RecursoNaoEncontradoException("Alerta não encontrado"));
 
         assertThatThrownBy(() -> comentarioService.adicionar("x", comentario("oi", autor)))
                 .isInstanceOf(RecursoNaoEncontradoException.class);

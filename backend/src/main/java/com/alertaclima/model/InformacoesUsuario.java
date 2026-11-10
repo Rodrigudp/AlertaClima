@@ -16,5 +16,5 @@ public class InformacoesUsuario {
     private String usuarioId;
     private String nome;
     private String email;
-    private String papel; // CITIZEN ou ANALYST
+    private PapelUsuario papel;
 }

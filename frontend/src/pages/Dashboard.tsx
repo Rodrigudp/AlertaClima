@@ -20,9 +20,9 @@ export default function Dashboard() {
     setLoading(true);
     try {
       let url = '/alertas?';
-      if (filterType) url += `tipo_evento=${encodeURIComponent(filterType)}&`;
+      if (filterType) url += `tipoEvento=${encodeURIComponent(filterType)}&`;
       if (filterStatus) url += `status=${encodeURIComponent(filterStatus)}&`;
-      if (filterDanger) url += `nivel_perigo=${encodeURIComponent(filterDanger)}&`;
+      if (filterDanger) url += `nivelPerigo=${encodeURIComponent(filterDanger)}&`;
 
       const res = await api.get(url);
       setAlerts(res.data);
@@ -68,7 +68,7 @@ export default function Dashboard() {
     total: alerts.length,
     suspeitos: alerts.filter(a => a.status === 'SUSPEITO').length,
     confirmados: alerts.filter(a => a.status === 'CONFIRMADO').length,
-    criticos: alerts.filter(a => a.nivel_perigo === 'Crítico').length,
+    criticos: alerts.filter(a => a.nivelPerigo === 'Crítico').length,
   };
 
   return (
@@ -160,10 +160,10 @@ export default function Dashboard() {
                 <tr key={alert.id} className="border-b hover:bg-gray-50">
                   <td className="px-4 py-3">#{String(alert.codigo ?? '?').padStart(4, '0')}</td>
                   <td className="px-4 py-3 font-medium text-gray-900">{alert.titulo}</td>
-                  <td className="px-4 py-3">{format(new Date(alert.data_evento), 'dd/MM/yyyy HH:mm')}</td>
+                  <td className="px-4 py-3">{format(new Date(alert.dataEvento), 'dd/MM/yyyy HH:mm')}</td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDangerColor(alert.nivel_perigo)}`}>
-                      {alert.nivel_perigo}
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDangerColor(alert.nivelPerigo)}`}>
+                      {alert.nivelPerigo}
                     </span>
                   </td>
                   <td className="px-4 py-3">

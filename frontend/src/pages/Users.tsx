@@ -178,7 +178,7 @@ function AlertList({ title, alerts, empty }: { title: string; alerts: any[]; emp
             <li key={a.id} className="py-2 flex justify-between items-center">
               <div>
                 <Link to={`/alerta/${a.id}`} className="text-sm font-medium text-blue-700 hover:underline">{a.titulo}</Link>
-                <p className="text-xs text-gray-500">{a.endereco} · {a.tipo_evento}</p>
+                <p className="text-xs text-gray-500">{a.endereco} · {a.tipoEvento}</p>
               </div>
               <span className="text-xs font-semibold px-2 py-1 bg-gray-100 rounded">{a.status}</span>
             </li>

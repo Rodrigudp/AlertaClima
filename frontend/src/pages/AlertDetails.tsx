@@ -64,8 +64,8 @@ export default function AlertDetails() {
       const res = await api.get(`/alertas/${id}`);
       setAlertData(res.data);
       setStatus(res.data.status);
-      setDangerLevel(res.data.nivel_perigo);
-      setNotes(res.data.notas_validacao || '');
+      setDangerLevel(res.data.nivelPerigo);
+      setNotes(res.data.notasValidacao || '');
     } catch (error) {
       console.error(error);
     } finally {
@@ -78,12 +78,12 @@ export default function AlertDetails() {
     try {
       await api.patch(`/alertas/${id}/status`, {
         status,
-        notas_validacao: notes,
-        validado_por: USUARIOS_DEMO.ANALYST
+        notasValidacao: notes,
+        validadoPor: USUARIOS_DEMO.ANALYST
       });
 
       await api.put(`/alertas/${id}`, {
-        nivel_perigo: dangerLevel
+        nivelPerigo: dangerLevel
       });
       
       alert('Alerta atualizado com sucesso');
@@ -117,7 +117,7 @@ export default function AlertDetails() {
             <h1 className="text-2xl font-bold text-gray-800">{alertData.titulo}</h1>
             <p className="text-gray-500 text-sm mt-1">
               Registrado em {format(new Date(alertData.criadoEm), 'dd/MM/yyyy HH:mm')}
-              {alertData.criado_por && <> por <span className="font-medium text-gray-700">{alertData.criado_por.nome}</span></>}
+              {alertData.criadoPor && <> por <span className="font-medium text-gray-700">{alertData.criadoPor.nome}</span></>}
             </p>
           </div>
           <div className="text-right">
@@ -125,7 +125,7 @@ export default function AlertDetails() {
               {alertData.status}
             </span>
             <span className="inline-block px-3 py-1 bg-red-100 text-red-800 font-bold rounded-full block text-center">
-              Nível: {alertData.nivel_perigo}
+              Nível: {alertData.nivelPerigo}
             </span>
           </div>
         </div>
@@ -142,11 +142,11 @@ export default function AlertDetails() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <h3 className="text-xs font-semibold text-gray-500 uppercase">Tipo</h3>
-                <p className="font-medium">{alertData.tipo_evento}</p>
+                <p className="font-medium">{alertData.tipoEvento}</p>
               </div>
               <div>
                 <h3 className="text-xs font-semibold text-gray-500 uppercase">Data da Ocorrência</h3>
-                <p className="font-medium">{format(new Date(alertData.data_evento), 'dd/MM/yyyy HH:mm')}</p>
+                <p className="font-medium">{format(new Date(alertData.dataEvento), 'dd/MM/yyyy HH:mm')}</p>
               </div>
               <div>
                 <h3 className="text-xs font-semibold text-gray-500 uppercase">Localização (Lat/Lon)</h3>
@@ -161,8 +161,8 @@ export default function AlertDetails() {
 
           <div>
             <h3 className="text-sm font-semibold text-gray-700 uppercase mb-2">Imagem Anexada</h3>
-            {alertData.url_imagem ? (
-              <img src={alertData.url_imagem} alt="Evidência" className="w-full h-48 object-cover rounded border border-gray-200" />
+            {alertData.urlImagem ? (
+              <img src={alertData.urlImagem} alt="Evidência" className="w-full h-48 object-cover rounded border border-gray-200" />
             ) : (
               <div className="w-full h-48 bg-gray-100 flex items-center justify-center rounded border border-gray-200 text-gray-400">
                 Nenhuma imagem

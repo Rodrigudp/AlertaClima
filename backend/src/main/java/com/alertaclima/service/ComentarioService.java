@@ -59,8 +59,6 @@ public class ComentarioService {
     }
 
     private void garantirQueAlertaExiste(String alertaId) {
-        if (alertaService.buscarAlertaPorId(alertaId) == null) {
-            throw new RecursoNaoEncontradoException("Alerta não encontrado");
-        }
+        alertaService.buscarAlertaPorId(alertaId);
     }
 }
