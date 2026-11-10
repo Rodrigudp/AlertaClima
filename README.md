@@ -76,7 +76,7 @@ Roda os 104 testes automatizados (JUnit 5 + Mockito + MockMvc, e testes de repos
 
 Resultado na 2ª entrega: **100% de linhas** e **96% de branches**.
 
-O mesmo comando roda no GitHub Actions a cada push (aba **Actions**). Cada execução mostra a cobertura no resumo e disponibiliza o relatório HTML para download no artefato `relatorio-jacoco`.
+O mesmo comando roda no GitHub Actions a cada push (aba **Actions**). Lá, os testes de repositório usam um MongoDB 7 como serviço do workflow, no lugar do embarcado. Para fazer o mesmo localmente, apontando para um MongoDB já rodando, defina `SPRING_DATA_MONGODB_URI` e `SPRING_AUTOCONFIGURE_EXCLUDE=de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration`. Cada execução mostra a cobertura no resumo e disponibiliza o relatório HTML para download no artefato `relatorio-jacoco`.
 
 ## Entregas
 | Entrega | Versão |

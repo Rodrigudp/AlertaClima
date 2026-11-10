@@ -9,6 +9,18 @@ jobs:
   backend:
     name: Backend - testes e cobertura
     runs-on: ubuntu-latest
+    # MongoDB real para os testes de repositório (@DataMongoTest). No CI ele substitui o
+    # MongoDB embarcado (Flapdoodle), que não tem binário para todas as versões do Ubuntu do runner.
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ping:1})'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     defaults:
       run:
         working-directory: backend
@@ -22,6 +34,9 @@ jobs:
           cache: maven
 
       - name: Testes + verificação de cobertura (JaCoCo >= 70%)
+        env:
+          SPRING_DATA_MONGODB_URI: mongodb://localhost:27017/alertaclima_test
+          SPRING_AUTOCONFIGURE_EXCLUDE: de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration
         run: mvn -B verify
 
       - name: Resumo da cobertura
