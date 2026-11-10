@@ -13,6 +13,6 @@ class OpenApiConfigurationTest {
         var openApi = configuration.alertaClimaOpenApi();
 
         assertThat(openApi.getInfo().getTitle()).isEqualTo("AlertaClima API");
-        assertThat(openApi.getInfo().getVersion()).isEqualTo("v1");
+        assertThat(openApi.getInfo().getVersion()).isEqualTo("v2");
     }
 }

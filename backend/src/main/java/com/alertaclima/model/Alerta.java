@@ -5,6 +5,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Document(collection = "alertas")
@@ -34,7 +36,17 @@ public class Alerta {
 
     private String notas_validacao;
 
+    /** Lista de subdocumentos com cada mudança de status do alerta. */
+    private List<RegistroHistorico> historico = new ArrayList<>();
+
     private LocalDateTime criadoEm;
     private LocalDateTime atualizadoEm;
     private LocalDateTime arquivadoEm;
+
+    public void registrarHistorico(String novoStatus, InformacoesUsuario responsavel, String observacao) {
+        if (historico == null) {
+            historico = new ArrayList<>();
+        }
+        historico.add(new RegistroHistorico(novoStatus, LocalDateTime.now(), responsavel, observacao));
+    }
 }

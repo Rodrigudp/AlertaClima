@@ -14,7 +14,7 @@ public class OpenApiConfiguration {
         return new OpenAPI()
                 .info(new Info()
                         .title("AlertaClima API")
-                        .description("API REST para registro colaborativo de alertas climáticos e de risco urbano.")
-                        .version("v1"));
+                        .description("API REST para registro colaborativo de alertas climáticos e de risco urbano, com usuários, regiões monitoradas e comentários.")
+                        .version("v2"));
     }
 }

@@ -2,6 +2,9 @@ package com.alertaclima.service;
 
 import com.alertaclima.model.Alerta;
 import com.alertaclima.model.InformacoesUsuario;
+import com.alertaclima.model.RegiaoMonitorada;
+import com.alertaclima.model.Usuario;
+import com.alertaclima.exception.RecursoNaoEncontradoException;
 import com.alertaclima.repository.AlertaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -23,6 +27,9 @@ class AlertaServiceTest {
 
     @Mock
     private AlertaRepository alertaRepository;
+
+    @Mock
+    private UsuarioService usuarioService;
 
     @InjectMocks
     private AlertaService alertaService;
@@ -167,6 +174,7 @@ class AlertaServiceTest {
         when(alertaRepository.save(any(Alerta.class))).thenAnswer(inv -> inv.getArgument(0));
 
         InformacoesUsuario analista = new InformacoesUsuario(null, "Analista", "analista@defesacivil.gov.br", "ANALYST");
+        when(usuarioService.vincular(analista)).thenReturn(analista);
         Alerta atualizado = alertaService.atualizarStatus("1", "CONFIRMADO", analista, "Confirmado in loco");
 
         assertThat(atualizado.getStatus()).isEqualTo("CONFIRMADO");
@@ -191,5 +199,72 @@ class AlertaServiceTest {
 
         assertThat(alertaService.arquivarAlerta("404")).isFalse();
         verify(alertaRepository, never()).save(any());
+    }
+
+    @Test
+    void criarAlertaVinculaCriadorAoUsuarioERegistraHistoricoInicial() {
+        InformacoesUsuario enviado = new InformacoesUsuario(null, "Cidadão", "cidadao@exemplo.com", "CITIZEN");
+        InformacoesUsuario vinculado = new InformacoesUsuario("u1", "Cidadão", "cidadao@exemplo.com", "CITIZEN");
+        when(usuarioService.vincular(enviado)).thenReturn(vinculado);
+        when(alertaRepository.count()).thenReturn(4L);
+        when(alertaRepository.save(any(Alerta.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Alerta entrada = new Alerta();
+        entrada.setCriado_por(enviado);
+
+        Alerta criado = alertaService.criarAlerta(entrada);
+
+        assertThat(criado.getCodigo()).isEqualTo(5L);
+        assertThat(criado.getCriado_por().getUsuarioId()).isEqualTo("u1");
+        assertThat(criado.getHistorico()).hasSize(1);
+        assertThat(criado.getHistorico().get(0).getStatus()).isEqualTo("SUSPEITO");
+        assertThat(criado.getHistorico().get(0).getResponsavel()).isEqualTo(vinculado);
+    }
+
+    @Test
+    void atualizarStatusAcrescentaRegistroNoHistorico() {
+        when(alertaRepository.findById("1")).thenReturn(Optional.of(alagamentoSP));
+        when(alertaRepository.save(any(Alerta.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        alertaService.atualizarStatus("1", "EM ANÁLISE", null, "Equipe a caminho");
+        Alerta atualizado = alertaService.atualizarStatus("1", "CONFIRMADO", null, "Confirmado");
+
+        assertThat(atualizado.getHistorico()).extracting("status").containsExactly("EM ANÁLISE", "CONFIRMADO");
+    }
+
+    @Test
+    void atualizarStatusRetornaNuloQuandoAlertaNaoExiste() {
+        when(alertaRepository.findById("404")).thenReturn(Optional.empty());
+
+        assertThat(alertaService.atualizarStatus("404", "CONFIRMADO", null, null)).isNull();
+        verify(alertaRepository, never()).save(any());
+    }
+
+    @Test
+    void buscarAlertasPorCriadorConsultaPelaReferenciaDoUsuario() {
+        when(usuarioService.buscarPorId("u1")).thenReturn(new Usuario());
+        when(alertaRepository.buscarPorCriador("u1")).thenReturn(List.of(alagamentoSP));
+
+        assertThat(alertaService.buscarAlertasPorCriador("u1")).containsExactly(alagamentoSP);
+    }
+
+    @Test
+    void buscarAlertasPorCriadorFalhaQuandoUsuarioNaoExiste() {
+        when(usuarioService.buscarPorId("x")).thenThrow(new RecursoNaoEncontradoException("Usuário não encontrado"));
+
+        assertThatThrownBy(() -> alertaService.buscarAlertasPorCriador("x"))
+                .isInstanceOf(RecursoNaoEncontradoException.class);
+        verify(alertaRepository, never()).buscarPorCriador(any());
+    }
+
+    @Test
+    void buscarAlertasNasRegioesDoUsuarioRetornaApenasAlertasDentroDasRegioes() {
+        Usuario usuario = new Usuario();
+        usuario.getRegioesMonitoradas().add(new RegiaoMonitorada("Casa", -23.55, -46.63, 30.0));
+        when(usuarioService.buscarPorId("u1")).thenReturn(usuario);
+        when(alertaRepository.findByArquivadoEmIsNullOrderByCriadoEmDesc())
+                .thenReturn(Arrays.asList(alagamentoSP, vendavalRJ));
+
+        assertThat(alertaService.buscarAlertasNasRegioesDoUsuario("u1")).containsExactly(alagamentoSP);
     }
 }
