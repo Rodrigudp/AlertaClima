@@ -83,7 +83,7 @@ O mesmo comando roda no GitHub Actions a cada push (aba **Actions**). Cada execu
 | 2ª entrega | tag `v2.0-entrega2` |
 
 ## Metodologia
-Kanban no GitHub Projects: **[Quadro AlertaClima - AEP](https://github.com/users/Rodrigudp/projects/2)**.
+Kanban no GitHub Projects: **[Quadro AlertaClima - AEP](https://github.com/users/Rodrigudp/projects/2/views/2)**.
 
 Cada tarefa é uma issue do repositório, com etiqueta da entrega (`entrega-1`, `entrega-2`) e da área (`backend`, `frontend`, `testes`, `docs`), e passa pelas colunas Todo → In Progress → Done. As issues concluídas ficam fechadas, o que deixa o histórico do trabalho visível também na aba **Issues**.
 
