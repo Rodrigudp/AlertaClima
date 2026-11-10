@@ -220,9 +220,9 @@ export default function AlertDetails() {
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               placeholder={`Comentar como ${USUARIOS_DEMO[role]?.nome ?? 'usuário'}`}
-              className="flex-1 p-2 border border-gray-300 rounded text-sm"
+              className="flex-1 min-w-0 p-2 border border-gray-300 rounded text-sm"
             />
-            <button type="submit" className="bg-blue-600 text-white text-sm font-semibold px-4 rounded hover:bg-blue-700">
+            <button type="submit" className="shrink-0 bg-blue-600 text-white text-sm font-semibold px-4 rounded hover:bg-blue-700">
               Enviar
             </button>
           </form>

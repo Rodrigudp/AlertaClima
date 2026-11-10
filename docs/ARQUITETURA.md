@@ -48,7 +48,7 @@
 | GET / PUT / DELETE | `/api/usuarios/{id}` | Detalhar, atualizar, remover usuário |
 | POST | `/api/usuarios/{id}/regioes` | Adicionar região monitorada |
 | DELETE | `/api/usuarios/{id}/regioes/{nome}` | Remover região monitorada |
-| GET | `/api/usuarios/{id}/alertas` | Alertas criados pelo usuário |
+| GET | `/api/usuarios/{id}/alertas` | Alertas ativos criados pelo usuário |
 | GET | `/api/usuarios/{id}/alertas-monitorados` | Alertas ativos dentro das regiões do usuário |
 | GET | `/api/usuarios/{id}/comentarios` | Comentários feitos pelo usuário |
 

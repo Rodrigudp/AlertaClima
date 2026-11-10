@@ -51,7 +51,7 @@ public class AlertaService {
         return alertaRepository.findById(id).orElse(null);
     }
 
-    /** Alertas registrados por um usuário (relacionamento usuarios -> alertas). */
+    /** Alertas ativos registrados por um usuário (relacionamento usuarios -> alertas). */
     public List<Alerta> buscarAlertasPorCriador(String usuarioId) {
         usuarioService.buscarPorId(usuarioId);
         return alertaRepository.buscarPorCriador(usuarioId);

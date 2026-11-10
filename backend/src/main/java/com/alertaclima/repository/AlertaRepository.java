@@ -14,7 +14,7 @@ public interface AlertaRepository extends MongoRepository<Alerta, String> {
 
     List<Alerta> findByArquivadoEmIsNotNullOrderByArquivadoEmDesc();
 
-    /** Alertas criados por um usuário (referência criado_por.usuarioId -> usuarios._id). */
-    @Query(value = "{ 'criado_por.usuarioId': ?0 }", sort = "{ 'criadoEm': -1 }")
+    /** Alertas ativos criados por um usuário (referência criado_por.usuarioId -> usuarios._id). */
+    @Query(value = "{ 'criado_por.usuarioId': ?0, 'arquivadoEm': null }", sort = "{ 'criadoEm': -1 }")
     List<Alerta> buscarPorCriador(String usuarioId);
 }

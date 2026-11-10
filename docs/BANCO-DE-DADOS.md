@@ -96,7 +96,7 @@ Comentários de cidadãos e analistas sobre um alerta. Fica em coleção própri
 - **Embutir ou referenciar.** Dados lidos sempre junto com o documento e de tamanho limitado (regiões do usuário, histórico do alerta, resumo do autor) ficam **embutidos**. Dados que crescem sem limite ou são consultados de forma independente (comentários) ficam em **coleção separada com referência**.
 - **Resumo desnormalizado do usuário.** Alertas e comentários guardam `nome`, `email` e `papel` junto da referência `usuarioId`. Assim a listagem não precisa de uma consulta extra (sem `$lookup`). Ao criar um alerta ou comentário, o backend procura o usuário pelo `usuarioId` ou pelo e-mail e grava a referência correta.
 - **Consultas que usam o relacionamento.**
-  - Alertas de um usuário: `{ "criado_por.usuarioId": <id> }`
+  - Alertas ativos de um usuário: `{ "criado_por.usuarioId": <id>, "arquivadoEm": null }`
   - Comentários de um alerta: `{ "alertaId": <id> }` ordenado por `criadoEm`
   - Comentários de um usuário: `{ "autor.usuarioId": <id> }`
   - Alertas nas regiões do usuário: carrega `regioesMonitoradas` do usuário e filtra os alertas ativos pela distância (Haversine) até o centro de cada região.
