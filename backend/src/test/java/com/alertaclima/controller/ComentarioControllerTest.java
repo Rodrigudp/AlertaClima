@@ -3,6 +3,7 @@ package com.alertaclima.controller;
 import com.alertaclima.exception.RecursoNaoEncontradoException;
 import com.alertaclima.model.Comentario;
 import com.alertaclima.model.InformacoesUsuario;
+import com.alertaclima.model.PapelUsuario;
 import com.alertaclima.service.ComentarioService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,7 @@ class ComentarioControllerTest {
         c.setId("c1");
         c.setAlertaId("a1");
         c.setTexto("Água subindo");
-        c.setAutor(new InformacoesUsuario("u1", "Maria", "maria@exemplo.com", "CITIZEN"));
+        c.setAutor(new InformacoesUsuario("u1", "Maria", "maria@exemplo.com", PapelUsuario.CITIZEN));
         return c;
     }
 

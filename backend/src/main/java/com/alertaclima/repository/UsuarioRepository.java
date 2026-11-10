@@ -1,5 +1,6 @@
 package com.alertaclima.repository;
 
+import com.alertaclima.model.PapelUsuario;
 import com.alertaclima.model.Usuario;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
@@ -14,7 +15,7 @@ public interface UsuarioRepository extends MongoRepository<Usuario, String> {
 
     boolean existsByEmail(String email);
 
-    List<Usuario> findByPapelOrderByNomeAsc(String papel);
+    List<Usuario> findByPapelOrderByNomeAsc(PapelUsuario papel);
 
     List<Usuario> findAllByOrderByNomeAsc();
 }

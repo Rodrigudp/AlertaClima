@@ -1,12 +1,7 @@
 package com.alertaclima.model;
 
-import java.util.Arrays;
-
+/** Papel do usuário: cidadão que reporta ou analista da Defesa Civil que valida. */
 public enum PapelUsuario {
     CITIZEN,
-    ANALYST;
-
-    public static boolean ehValido(String papel) {
-        return papel != null && Arrays.stream(values()).anyMatch(p -> p.name().equals(papel));
-    }
+    ANALYST
 }

@@ -1,5 +1,6 @@
 package com.alertaclima.config;
 
+import com.alertaclima.model.PapelUsuario;
 import com.alertaclima.model.Alerta;
 import com.alertaclima.model.Comentario;
 import com.alertaclima.model.Usuario;
@@ -58,12 +59,12 @@ class InicializadorDadosTest {
         verify(alertaRepository, times(10)).save(alertas.capture());
         List<Alerta> salvos = alertas.getAllValues();
         assertThat(salvos).allSatisfy(a -> {
-            assertThat(a.getCriado_por().getUsuarioId()).startsWith("id-");
-            assertThat(a.getCriado_por().getPapel()).isEqualTo("CITIZEN");
+            assertThat(a.getCriadoPor().getUsuarioId()).startsWith("id-");
+            assertThat(a.getCriadoPor().getPapel()).isEqualTo(PapelUsuario.CITIZEN);
             assertThat(a.getHistorico()).isNotEmpty();
         });
         assertThat(salvos).anySatisfy(a -> {
-            assertThat(a.getValidado_por().getPapel()).isEqualTo("ANALYST");
+            assertThat(a.getValidadoPor().getPapel()).isEqualTo(PapelUsuario.ANALYST);
             assertThat(a.getHistorico()).hasSize(2);
         });
 

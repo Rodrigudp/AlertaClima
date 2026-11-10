@@ -19,22 +19,22 @@ public class Alerta {
     private String titulo;
     private String descricao;
 
-    private String tipo_evento;
-    private String nivel_perigo;
-    private String status;
+    private String tipoEvento;
+    private String nivelPerigo;
+    private StatusAlerta status;
 
     private Double latitude;
     private Double longitude;
 
     private String endereco;
-    private String url_imagem;
+    private String urlImagem;
 
-    private LocalDateTime data_evento;
+    private LocalDateTime dataEvento;
 
-    private InformacoesUsuario criado_por;
-    private InformacoesUsuario validado_por;
+    private InformacoesUsuario criadoPor;
+    private InformacoesUsuario validadoPor;
 
-    private String notas_validacao;
+    private String notasValidacao;
 
     /** Lista de subdocumentos com cada mudança de status do alerta. */
     private List<RegistroHistorico> historico = new ArrayList<>();
@@ -43,7 +43,7 @@ public class Alerta {
     private LocalDateTime atualizadoEm;
     private LocalDateTime arquivadoEm;
 
-    public void registrarHistorico(String novoStatus, InformacoesUsuario responsavel, String observacao) {
+    public void registrarHistorico(StatusAlerta novoStatus, InformacoesUsuario responsavel, String observacao) {
         if (historico == null) {
             historico = new ArrayList<>();
         }

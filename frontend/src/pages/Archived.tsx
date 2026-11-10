@@ -46,7 +46,7 @@ export default function Archived() {
                 <tr key={alert.id} className="border-b hover:bg-gray-50">
                   <td className="px-4 py-3">#{String(alert.codigo ?? '?').padStart(4, '0')}</td>
                   <td className="px-4 py-3 font-medium text-gray-900">{alert.titulo}</td>
-                  <td className="px-4 py-3">{format(new Date(alert.data_evento), 'dd/MM/yyyy HH:mm')}</td>
+                  <td className="px-4 py-3">{format(new Date(alert.dataEvento), 'dd/MM/yyyy HH:mm')}</td>
                   <td className="px-4 py-3">{alert.arquivadoEm ? format(new Date(alert.arquivadoEm), 'dd/MM/yyyy HH:mm') : '-'}</td>
                   <td className="px-4 py-3 text-red-600 font-medium">ARQUIVADO</td>
                 </tr>

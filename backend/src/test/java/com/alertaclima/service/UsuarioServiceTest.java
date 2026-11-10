@@ -1,5 +1,6 @@
 package com.alertaclima.service;
 
+import com.alertaclima.model.PapelUsuario;
 import com.alertaclima.exception.RecursoNaoEncontradoException;
 import com.alertaclima.exception.RegraNegocioException;
 import com.alertaclima.model.InformacoesUsuario;
@@ -39,7 +40,7 @@ class UsuarioServiceTest {
         maria.setId("u1");
         maria.setNome("Maria");
         maria.setEmail("maria@exemplo.com");
-        maria.setPapel("CITIZEN");
+        maria.setPapel(PapelUsuario.CITIZEN);
         maria.setRegioesMonitoradas(new ArrayList<>(List.of(new RegiaoMonitorada("Casa", -23.55, -46.63, 10.0))));
     }
 
@@ -57,7 +58,7 @@ class UsuarioServiceTest {
 
         Usuario criado = usuarioService.criar(novo("João", "joao@exemplo.com"));
 
-        assertThat(criado.getPapel()).isEqualTo("CITIZEN");
+        assertThat(criado.getPapel()).isEqualTo(PapelUsuario.CITIZEN);
         assertThat(criado.getCriadoEm()).isNotNull();
         assertThat(criado.getRegioesMonitoradas()).isEmpty();
     }
@@ -66,7 +67,7 @@ class UsuarioServiceTest {
     void criarComListaDeRegioesNulaGuardaListaVazia() {
         when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
         Usuario entrada = novo("Ana", "ana@exemplo.com");
-        entrada.setPapel("ANALYST");
+        entrada.setPapel(PapelUsuario.ANALYST);
         entrada.setRegioesMonitoradas(null);
 
         assertThat(usuarioService.criar(entrada).getRegioesMonitoradas()).isEmpty();
@@ -90,11 +91,7 @@ class UsuarioServiceTest {
     }
 
     @Test
-    void criarRejeitaPapelInvalidoERegiaoInvalida() {
-        Usuario papelErrado = novo("X", "x@x.com");
-        papelErrado.setPapel("ADMIN");
-        assertThatThrownBy(() -> usuarioService.criar(papelErrado)).isInstanceOf(RegraNegocioException.class);
-
+    void criarRejeitaRegiaoInvalida() {
         Usuario regiaoErrada = novo("Y", "y@y.com");
         regiaoErrada.getRegioesMonitoradas().add(new RegiaoMonitorada("Sem raio", -23.0, -46.0, 0.0));
         assertThatThrownBy(() -> usuarioService.criar(regiaoErrada)).isInstanceOf(RegraNegocioException.class);
@@ -103,11 +100,10 @@ class UsuarioServiceTest {
     @Test
     void listarSemPapelRetornaTodosEComPapelFiltra() {
         when(usuarioRepository.findAllByOrderByNomeAsc()).thenReturn(List.of(maria));
-        when(usuarioRepository.findByPapelOrderByNomeAsc("ANALYST")).thenReturn(List.of());
+        when(usuarioRepository.findByPapelOrderByNomeAsc(PapelUsuario.ANALYST)).thenReturn(List.of());
 
         assertThat(usuarioService.listar(null)).containsExactly(maria);
-        assertThat(usuarioService.listar("")).containsExactly(maria);
-        assertThat(usuarioService.listar("ANALYST")).isEmpty();
+        assertThat(usuarioService.listar(PapelUsuario.ANALYST)).isEmpty();
     }
 
     @Test
@@ -126,14 +122,14 @@ class UsuarioServiceTest {
 
         Usuario dados = novo("Maria Silva", "nova@exemplo.com");
         dados.setTelefone("44999990000");
-        dados.setPapel("ANALYST");
+        dados.setPapel(PapelUsuario.ANALYST);
 
         Usuario atualizado = usuarioService.atualizar("u1", dados);
 
         assertThat(atualizado.getNome()).isEqualTo("Maria Silva");
         assertThat(atualizado.getEmail()).isEqualTo("nova@exemplo.com");
         assertThat(atualizado.getTelefone()).isEqualTo("44999990000");
-        assertThat(atualizado.getPapel()).isEqualTo("ANALYST");
+        assertThat(atualizado.getPapel()).isEqualTo(PapelUsuario.ANALYST);
     }
 
     @Test
@@ -207,7 +203,7 @@ class UsuarioServiceTest {
         when(usuarioRepository.findByEmail("maria@exemplo.com")).thenReturn(Optional.of(maria));
 
         InformacoesUsuario porId = usuarioService.vincular(new InformacoesUsuario("u1", null, null, null));
-        InformacoesUsuario porEmail = usuarioService.vincular(new InformacoesUsuario(null, "M", "maria@exemplo.com", "CITIZEN"));
+        InformacoesUsuario porEmail = usuarioService.vincular(new InformacoesUsuario(null, "M", "maria@exemplo.com", PapelUsuario.CITIZEN));
 
         assertThat(porId.getNome()).isEqualTo("Maria");
         assertThat(porEmail.getUsuarioId()).isEqualTo("u1");
@@ -216,7 +212,7 @@ class UsuarioServiceTest {
     @Test
     void vincularMantemDadosQuandoUsuarioNaoEstaCadastrado() {
         when(usuarioRepository.findByEmail("anonimo@exemplo.com")).thenReturn(Optional.empty());
-        InformacoesUsuario anonimo = new InformacoesUsuario(null, "Anônimo", "anonimo@exemplo.com", "CITIZEN");
+        InformacoesUsuario anonimo = new InformacoesUsuario(null, "Anônimo", "anonimo@exemplo.com", PapelUsuario.CITIZEN);
 
         assertThat(usuarioService.vincular(anonimo)).isSameAs(anonimo);
         assertThat(usuarioService.vincular(new InformacoesUsuario(null, "Sem email", null, null)).getNome()).isEqualTo("Sem email");

@@ -107,10 +107,10 @@ export default function MapPage() {
               <Popup>
                 <div className="space-y-1">
                   <h3 className="font-bold text-sm">{alert.titulo}</h3>
-                  <p className="text-xs text-gray-600">{alert.tipo_evento}</p>
-                  <p className="text-xs font-medium text-red-600">Perigo: {alert.nivel_perigo}</p>
+                  <p className="text-xs text-gray-600">{alert.tipoEvento}</p>
+                  <p className="text-xs font-medium text-red-600">Perigo: {alert.nivelPerigo}</p>
                   <p className="text-xs font-medium text-blue-600">Status: {alert.status}</p>
-                  <p className="text-xs text-gray-500">{format(new Date(alert.data_evento), 'dd/MM/yyyy HH:mm')}</p>
+                  <p className="text-xs text-gray-500">{format(new Date(alert.dataEvento), 'dd/MM/yyyy HH:mm')}</p>
                 </div>
               </Popup>
             </Marker>

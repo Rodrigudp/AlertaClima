@@ -10,13 +10,13 @@ export default function NewAlert() {
   const [formData, setFormData] = useState({
     titulo: '',
     descricao: '',
-    tipo_evento: 'Árvore caída',
-    nivel_perigo: 'Moderado',
+    tipoEvento: 'Árvore caída',
+    nivelPerigo: 'Moderado',
     latitude: '',
     longitude: '',
     endereco: '',
-    url_imagem: '',
-    criado_por: USUARIOS_DEMO.CITIZEN // Usuário do seed; o backend grava a referência usuarioId
+    urlImagem: '',
+    criadoPor: USUARIOS_DEMO.CITIZEN // Usuário do seed; o backend grava a referência usuarioId
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -66,14 +66,14 @@ export default function NewAlert() {
     const reader = new FileReader();
     reader.onload = () => {
       const result = reader.result as string;
-      setFormData(prev => ({ ...prev, url_imagem: result }));
+      setFormData(prev => ({ ...prev, urlImagem: result }));
       setImagePreview(result);
     };
     reader.readAsDataURL(file);
   };
 
   const removeImage = () => {
-    setFormData(prev => ({ ...prev, url_imagem: '' }));
+    setFormData(prev => ({ ...prev, urlImagem: '' }));
     setImagePreview(null);
   };
 
@@ -86,7 +86,7 @@ export default function NewAlert() {
         ...formData,
         latitude: parseFloat(formData.latitude),
         longitude: parseFloat(formData.longitude),
-        data_evento: new Date()
+        dataEvento: new Date()
       };
 
       await api.post('/alertas', payload);
@@ -120,8 +120,8 @@ export default function NewAlert() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Evento</label>
           <select 
-            name="tipo_evento"
-            value={formData.tipo_evento}
+            name="tipoEvento"
+            value={formData.tipoEvento}
             onChange={handleChange}
             className="w-full p-2 border border-gray-300 rounded"
           >
@@ -145,8 +145,8 @@ export default function NewAlert() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Nível de Perigo</label>
           <select 
-            name="nivel_perigo"
-            value={formData.nivel_perigo}
+            name="nivelPerigo"
+            value={formData.nivelPerigo}
             onChange={handleChange}
             className="w-full p-2 border border-gray-300 rounded"
           >

@@ -3,7 +3,9 @@ package com.alertaclima.config;
 import com.alertaclima.model.Alerta;
 import com.alertaclima.model.Comentario;
 import com.alertaclima.model.InformacoesUsuario;
+import com.alertaclima.model.PapelUsuario;
 import com.alertaclima.model.RegiaoMonitorada;
+import com.alertaclima.model.StatusAlerta;
 import com.alertaclima.model.Usuario;
 import com.alertaclima.repository.AlertaRepository;
 import com.alertaclima.repository.ComentarioRepository;
@@ -49,12 +51,12 @@ public class InicializadorDados implements CommandLineRunner {
         alertaRepository.deleteAll();
         usuarioRepository.deleteAll();
 
-        Usuario cidadao = usuarioRepository.save(novoUsuario("Cidadão Exemplo", "cidadao@exemplo.com", "CITIZEN",
+        Usuario cidadao = usuarioRepository.save(novoUsuario("Cidadão Exemplo", "cidadao@exemplo.com", PapelUsuario.CITIZEN,
                 List.of(new RegiaoMonitorada("Casa - São Paulo", -23.5505, -46.6333, 15.0),
                         new RegiaoMonitorada("Trabalho - Curitiba", -25.4284, -49.2733, 20.0))));
-        Usuario cidada = usuarioRepository.save(novoUsuario("Maria Moradora", "maria@exemplo.com", "CITIZEN",
+        Usuario cidada = usuarioRepository.save(novoUsuario("Maria Moradora", "maria@exemplo.com", PapelUsuario.CITIZEN,
                 List.of(new RegiaoMonitorada("Bairro - Rio de Janeiro", -22.9068, -43.1729, 25.0))));
-        Usuario analista = usuarioRepository.save(novoUsuario("Analista Defesa Civil", "analista@defesacivil.gov.br", "ANALYST",
+        Usuario analista = usuarioRepository.save(novoUsuario("Analista Defesa Civil", "analista@defesacivil.gov.br", PapelUsuario.ANALYST,
                 List.of(new RegiaoMonitorada("Região Sudeste", -22.0, -45.0, 600.0))));
 
         InformacoesUsuario autorCidadao = cidadao.resumo();
@@ -78,26 +80,26 @@ public class InicializadorDados implements CommandLineRunner {
         long codigo = 1;
         for (String[] ev : eventos) {
             InformacoesUsuario criador = ev[7].endsWith("RJ") ? autorCidada : autorCidadao;
-            String status = ev[4];
+            StatusAlerta status = StatusAlerta.deValor(ev[4]);
 
             Alerta alerta = new Alerta();
             alerta.setCodigo(codigo++);
             alerta.setTitulo(ev[0]);
             alerta.setDescricao(ev[1]);
-            alerta.setTipo_evento(ev[2]);
-            alerta.setNivel_perigo(ev[3]);
+            alerta.setTipoEvento(ev[2]);
+            alerta.setNivelPerigo(ev[3]);
             alerta.setStatus(status);
             alerta.setLatitude(Double.parseDouble(ev[5]));
             alerta.setLongitude(Double.parseDouble(ev[6]));
             alerta.setEndereco(ev[7]);
-            alerta.setData_evento(LocalDateTime.now());
-            alerta.setCriado_por(criador);
-            alerta.registrarHistorico("SUSPEITO", criador, "Alerta registrado");
-            if (!status.equals("SUSPEITO")) {
-                alerta.setValidado_por(autorAnalista);
+            alerta.setDataEvento(LocalDateTime.now());
+            alerta.setCriadoPor(criador);
+            alerta.registrarHistorico(StatusAlerta.SUSPEITO, criador, "Alerta registrado");
+            if (status != StatusAlerta.SUSPEITO) {
+                alerta.setValidadoPor(autorAnalista);
                 alerta.registrarHistorico(status, autorAnalista, "Situação avaliada pela Defesa Civil");
             }
-            alerta.setUrl_imagem(baseUrl + "/images/placeholder-alert.png");
+            alerta.setUrlImagem(baseUrl + "/images/placeholder-alert.png");
             alerta.setCriadoEm(LocalDateTime.now());
             alerta.setAtualizadoEm(LocalDateTime.now());
             salvos.add(alertaRepository.save(alerta));
@@ -111,7 +113,7 @@ public class InicializadorDados implements CommandLineRunner {
         log.info("Banco populado: 3 usuários, {} alertas e 4 comentários fictícios.", eventos.length);
     }
 
-    private Usuario novoUsuario(String nome, String email, String papel, List<RegiaoMonitorada> regioes) {
+    private Usuario novoUsuario(String nome, String email, PapelUsuario papel, List<RegiaoMonitorada> regioes) {
         Usuario usuario = new Usuario();
         usuario.setNome(nome);
         usuario.setEmail(email);
